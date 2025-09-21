@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Bayesian Analysis of Altruistic Food Sharing in Rats</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="Analysis_py_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Analysis_py_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Analysis_py_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Analysis_py_files/libs/quarto-html/popper.min.js"></script>
+<script src="Analysis_py_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Analysis_py_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Analysis_py_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Analysis_py_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Analysis_py_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Analysis_py_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Analysis_py_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bayesian Analysis of Altruistic Food Sharing in Rats</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This notebook replicates the statistical analyses from the publication “Failure to find altruistic food sharing in rats” (<em>Frontiers in Psychology</em>, 2021). The goal is to translate the original R/Stan analysis into a Python-based workflow using Pandas and CmdStanPy.</p>
+<p><strong>Models presented:</strong></p>
+<ol type="1">
+<li>A <strong>hierarchical binomial logistic regression</strong> to model the choice between food and social interaction.</li>
+<li>A <strong>hierarchical negative binomial regression</strong> to model the rate of food and social responses.</li>
+<li>A <strong>hierarchical negative binomial regression</strong> to model food pellet consumption and sharing.</li>
+</ol>
+<div id="acd7ffaa" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cmdstanpy <span class="im">import</span> CmdStanModel</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the display format for floating-point numbers to 3 decimal places</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>pd.options.display.float_format <span class="op">=</span> <span class="st">'</span><span class="sc">{:.3f}</span><span class="st">'</span>.<span class="bu">format</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the logger for CmdStanPy</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> logging.getLogger(<span class="st">'cmdstanpy'</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the logging level to ERROR to hide INFO and </span><span class="al">WARNING</span><span class="co"> messages</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>logger.setLevel(logging.ERROR)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- 1. Loading and Preparing Data ---"</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>behav_data <span class="op">=</span> pd.read_csv(<span class="st">"final versions/Data and analysis code/Raw_data.csv"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 1-based integer subject ID for Stan</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>behav_data[<span class="st">'Subject'</span>] <span class="op">=</span> behav_data[<span class="st">'Rat'</span>].astype(<span class="st">'category'</span>).cat.codes <span class="op">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- 1. Loading and Preparing Data ---
+Data loaded successfully.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Rat</th>
+<th data-quarto-table-cell-role="th">Condition</th>
+<th data-quarto-table-cell-role="th">FoodAmmt</th>
+<th data-quarto-table-cell-role="th">Social</th>
+<th data-quarto-table-cell-role="th">Food</th>
+<th data-quarto-table-cell-role="th">Sharing</th>
+<th data-quarto-table-cell-role="th">TimesShared</th>
+<th data-quarto-table-cell-role="th">PelletsLeft</th>
+<th data-quarto-table-cell-role="th">Subject</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>5</td>
+<td>78</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>127</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>10</td>
+<td>69</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>7</td>
+<td>78</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>22</td>
+<td>38</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="model-1-food-vs.-social-choice" class="level2">
+<h2 class="anchored" data-anchor-id="model-1-food-vs.-social-choice">2. Model 1: Food vs.&nbsp;Social Choice</h2>
+<p>This model uses a hierarchical binomial logistic regression to estimate the rate of food choice. As noted in the paper, Condition 5 is excluded because preference is undefined when one of the response options is unavailable.</p>
+<div id="9a148dd7" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cell 4: Model 1 - Code</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- 2. Running Model 1: Food vs. Social Choice (Binomial) ---"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Stan code with the for-loop in the model block</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>pair_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">data{</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; N;         // Number of observations</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; S;         // Number of subjects</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; subID;  // Subject IDs</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; C;         // Number of conditions</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; condID; // Condition ID</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=0&gt; choice; // Number of choices per session</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=0&gt; food;   // Number of food choices (such that choose[s]-food[s]=social[s])</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="st">//</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="st">transformed data {</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">    vector[S] u;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="st">    for (s in 1:S) {</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="st">        u[s] = 1;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="st">//</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="st">parameters{</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[C, S] z;                   // beta proxy</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="st">    cholesky_factor_corr[C] L_Omega;  // prior correlation</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="st">    vector&lt;lower=0&gt;[C] tau;           // prior scale</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="st">    row_vector[C] gamma;              // population means</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="st">//</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters{</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[S,C] beta;                 // individual coefficients for each subject in each condition</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="st">    beta = u * gamma + (diag_pre_multiply(tau,L_Omega) * z)';</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="st">//</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="st">model{</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] real mu;</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(z) ~ normal(0,1);</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="st">    L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="st">    tau ~ exponential(1.5);</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(gamma) ~ normal(0,1.5);</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="st">    for ( n in 1:N ) {</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="st">        mu[n] = beta[subID[n],condID[n]];</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="st">    food ~ binomial_logit(choice,mu);</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Write model to a .stan file</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>stan_file_pair <span class="op">=</span> <span class="st">"pair_multilevel_model.stan"</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_pair, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>    f.write(pair_model_code)</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Compile the Stan model</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>pair_model <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_pair)</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data: filter out condition 5</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>data_subset <span class="op">=</span> behav_data[behav_data[<span class="st">'Condition'</span>] <span class="op">!=</span> <span class="dv">5</span>].copy()</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>data_subset[<span class="st">'Condition_new'</span>] <span class="op">=</span> data_subset[<span class="st">'Condition'</span>]</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>data_subset.loc[data_subset[<span class="st">'Condition'</span>] <span class="op">&gt;</span> <span class="dv">5</span>, <span class="st">'Condition_new'</span>] <span class="op">=</span> data_subset[<span class="st">'Condition'</span>] <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>stan_data_choice <span class="op">=</span> {</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(data_subset),</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: data_subset[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: data_subset[<span class="st">'Subject'</span>].tolist(),</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: data_subset[<span class="st">'Condition_new'</span>].nunique(),</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: data_subset[<span class="st">'Condition_new'</span>].tolist(),</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"choice"</span>: (data_subset[<span class="st">'Social'</span>] <span class="op">+</span> data_subset[<span class="st">'Food'</span>]).tolist(),</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"food"</span>: data_subset[<span class="st">'Food'</span>].tolist()</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample from the posterior distribution</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>choice_fit <span class="op">=</span> pair_model.sample(</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_choice, chains<span class="op">=</span><span class="dv">4</span>, parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>, iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.99</span>, max_treedepth<span class="op">=</span><span class="dv">15</span>, </span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>    show_progress <span class="op">=</span> <span class="va">False</span>, refresh <span class="op">=</span> <span class="dv">3000</span></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 1 Sampling Complete."</span>)</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a><span class="co"># Display summary for the 'gamma' parameter</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>fitsum <span class="op">=</span> choice_fit.summary()</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fitsum[fitsum.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:33:08 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/pair_multilevel_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/pair_multilevel_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- 2. Running Model 1: Food vs. Social Choice (Binomial) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:33:20 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/pair_multilevel_model
+21:33:21 - cmdstanpy - INFO - CmdStan start processing
+21:33:21 - cmdstanpy - INFO - Chain [1] start processing
+21:33:21 - cmdstanpy - INFO - Chain [2] start processing
+21:33:21 - cmdstanpy - INFO - Chain [3] start processing
+21:33:21 - cmdstanpy - INFO - Chain [4] start processing
+21:33:32 - cmdstanpy - INFO - Chain [2] done processing
+21:33:33 - cmdstanpy - INFO - Chain [4] done processing
+21:33:33 - cmdstanpy - INFO - Chain [1] done processing
+21:33:35 - cmdstanpy - INFO - Chain [3] done processing
+21:33:35 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'pair_multilevel_model.stan', line 35, column 1 to column 32)
+Consider re-running with show_console=True if the above output is unclear!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 1 Sampling Complete.
+           Mean  MCSE  StdDev   MAD     5%    50%   95%  ESS_bulk  ESS_tail  \
+gamma[1]  2.281 0.011   0.586 0.489  1.220  2.361 3.081  2934.730  3532.210   
+gamma[2]  1.735 0.012   0.659 0.564  0.548  1.813 2.668  3388.860  3309.530   
+gamma[3]  0.657 0.008   0.415 0.326 -0.020  0.669 1.279  3102.210  2734.010   
+gamma[4] -0.051 0.006   0.265 0.179 -0.465 -0.046 0.341  2971.950  2187.250   
+gamma[5]  0.095 0.003   0.188 0.140 -0.171  0.097 0.362  5231.790  3882.760   
+gamma[6]  0.259 0.007   0.430 0.358 -0.439  0.267 0.933  3641.560  3457.170   
+
+          ESS_bulk/s  R_hat  
+gamma[1]     115.051  1.002  
+gamma[2]     132.855  1.000  
+gamma[3]     121.617  1.001  
+gamma[4]     116.511  1.000  
+gamma[5]     205.104  1.001  
+gamma[6]     142.761  1.001  </code></pre>
+</div>
+</div>
+</section>
+<section id="model-2-response-rates-by-type" class="level2">
+<h2 class="anchored" data-anchor-id="model-2-response-rates-by-type">3. Model 2: Response Rates by Type</h2>
+<p>This model estimates the absolute number of food and social choices per session using a hierarchical negative binomial regression to account for overdispersion in the count data.</p>
+<div id="02f1f759" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- 3. Running Model 2: Response Rates (Negative Binomial) ---"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>resp_rate_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; N;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; S;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; subID;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; C;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; condID;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=0&gt; FC;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int SC;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[2*C, S] z;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">    cholesky_factor_corr[2*C] L_Omega;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">    vector&lt;lower=0&gt;[2*C] tau;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">    row_vector[2*C] gamma;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="st">    real&lt;lower=0&gt; overdisp;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[S, 2*C] beta;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="st">    beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(z) ~ std_normal();</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="st">    L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="st">    tau ~ exponential(1.5);</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(gamma) ~ normal(1, 1.5);</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="st">    overdisp ~ exponential(1);</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="st">    for (n in 1:N) {</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="st">      FC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="st">      if (SC[n] &gt;= 0) {</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="st">        SC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>stan_file_resp_rate <span class="op">=</span> <span class="st">"resp_rate_multilevel_model.stan"</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_resp_rate, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    f.write(resp_rate_model_code)</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>resp_rate_model <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_resp_rate)</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>stan_data_resp_rate <span class="op">=</span> {</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(behav_data), <span class="st">"S"</span>: behav_data[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: behav_data[<span class="st">'Subject'</span>].tolist(), <span class="st">"C"</span>: behav_data[<span class="st">'Condition'</span>].nunique(),</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: behav_data[<span class="st">'Condition'</span>].tolist(), <span class="st">"FC"</span>: behav_data[<span class="st">'Food'</span>].tolist(),</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SC"</span>: behav_data[<span class="st">'Social'</span>].tolist()</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>resp_rate_fit <span class="op">=</span> resp_rate_model.sample(</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_resp_rate, chains<span class="op">=</span><span class="dv">4</span>, parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>, iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.99</span>, max_treedepth<span class="op">=</span><span class="dv">15</span>, </span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    show_progress <span class="op">=</span> <span class="va">False</span>, refresh <span class="op">=</span> <span class="dv">3000</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 2 Sampling Complete."</span>)</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>fitsum <span class="op">=</span> resp_rate_fit.summary()</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fitsum[fitsum.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:33:35 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/resp_rate_multilevel_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/resp_rate_multilevel_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- 3. Running Model 2: Response Rates (Negative Binomial) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:33:46 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/resp_rate_multilevel_model
+21:33:47 - cmdstanpy - INFO - CmdStan start processing
+21:33:47 - cmdstanpy - INFO - Chain [1] start processing
+21:33:47 - cmdstanpy - INFO - Chain [2] start processing
+21:33:47 - cmdstanpy - INFO - Chain [3] start processing
+21:33:47 - cmdstanpy - INFO - Chain [4] start processing
+21:34:54 - cmdstanpy - INFO - Chain [1] done processing
+21:34:59 - cmdstanpy - INFO - Chain [4] done processing
+21:35:17 - cmdstanpy - INFO - Chain [2] done processing
+21:35:21 - cmdstanpy - INFO - Chain [3] done processing
+21:35:21 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'resp_rate_multilevel_model.stan', line 24, column 4 to column 35)
+Consider re-running with show_console=True if the above output is unclear!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 2 Sampling Complete.
+           Mean  MCSE  StdDev   MAD     5%   50%   95%  ESS_bulk  ESS_tail  \
+gamma[1]  4.621 0.011   0.491 0.283  3.707 4.721 5.161  2407.840  2042.430   
+gamma[2]  4.219 0.009   0.450 0.275  3.362 4.308 4.734  2749.760  2879.620   
+gamma[3]  3.269 0.005   0.261 0.153  2.827 3.308 3.584  3149.620  2622.050   
+gamma[4]  2.468 0.007   0.361 0.261  1.858 2.502 2.952  2928.160  2584.440   
+gamma[5]  2.819 0.004   0.197 0.137  2.509 2.828 3.086  3644.290  2868.680   
+gamma[6]  2.442 0.004   0.219 0.153  2.090 2.460 2.728  4226.740  2795.620   
+gamma[7]  2.580 0.004   0.200 0.130  2.287 2.594 2.828  3504.610  2353.480   
+gamma[8]  2.098 0.008   0.414 0.314  1.387 2.137 2.672  3304.460  3118.000   
+gamma[9]  2.116 0.008   0.522 0.453  1.214 2.153 2.881  4378.640  3854.100   
+gamma[10] 2.410 0.008   0.463 0.375  1.587 2.451 3.060  3532.590  3235.530   
+gamma[11] 2.408 0.008   0.461 0.385  1.591 2.450 3.076  3839.970  3413.480   
+gamma[12] 0.992 0.012   1.478 1.454 -1.472 0.996 3.462 14234.200  3889.710   
+gamma[13] 2.298 0.007   0.319 0.209  1.778 2.335 2.704  2841.840  2097.470   
+gamma[14] 2.110 0.009   0.511 0.417  1.222 2.149 2.853  3945.360  3358.360   
+
+           ESS_bulk/s  R_hat  
+gamma[1]       14.283  1.001  
+gamma[2]       16.311  1.002  
+gamma[3]       18.683  1.001  
+gamma[4]       17.369  1.001  
+gamma[5]       21.617  1.001  
+gamma[6]       25.072  1.001  
+gamma[7]       20.789  1.001  
+gamma[8]       19.601  1.000  
+gamma[9]       25.973  1.002  
+gamma[10]      20.955  1.001  
+gamma[11]      22.778  1.000  
+gamma[12]      84.434  1.001  
+gamma[13]      16.857  1.000  
+gamma[14]      23.403  1.000  </code></pre>
+</div>
+</div>
+</section>
+<section id="model-3-food-intake-and-sharing" class="level2">
+<h2 class="anchored" data-anchor-id="model-3-food-intake-and-sharing">4. Model 3: Food Intake and Sharing</h2>
+<p>The final model analyzes the counts of food pellets that were consumed, “shared,” or left behind. “Sharing” was defined as the focal rat producing food and then releasing its partner while food remained available.</p>
+<div id="518ed95d" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- 4. Running Model 3: Food Intake (Negative Binomial) ---"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>intake_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; N;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; S;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; subID;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">    int&lt;lower=1&gt; C;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=1&gt; condID;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int&lt;lower=0&gt; CP;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int LP;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">    array[N] int SP;</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[3*C, S] z;</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">    cholesky_factor_corr[3*C] L_Omega;</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">    vector&lt;lower=0&gt;[3*C] tau;</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">    row_vector[3*C] gamma;</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="st">    real&lt;lower=0&gt; overdisp;</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="st">    matrix[S, 3*C] beta;</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="st">    beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(z) ~ std_normal();</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="st">    L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="st">    tau ~ exponential(1.5);</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="st">    to_vector(gamma) ~ normal(0, 1.5);</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="st">    overdisp ~ exponential(1);</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="st">    for (n in 1:N) {</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="st">      CP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="st">      if (LP[n] &gt;= 0) {</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="st">        LP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="st">      if (SP[n] &gt;= 0) {</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="st">        SP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + (2*C)], overdisp);</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>stan_file_intake <span class="op">=</span> <span class="st">"intake_multilevel_model.stan"</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_intake, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>    f.write(intake_model_code)</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>intake_model <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_intake)</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>stan_data_intake <span class="op">=</span> {</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(behav_data), <span class="st">"S"</span>: behav_data[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: behav_data[<span class="st">'Subject'</span>].tolist(), <span class="st">"C"</span>: behav_data[<span class="st">'Condition'</span>].nunique(),</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: behav_data[<span class="st">'Condition'</span>].tolist(),</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    <span class="st">"CP"</span>: (behav_data[<span class="st">'Food'</span>] <span class="op">*</span> behav_data[<span class="st">'FoodAmmt'</span>]).tolist(),</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SP"</span>: behav_data[<span class="st">'Sharing'</span>].tolist(),</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LP"</span>: behav_data[<span class="st">'PelletsLeft'</span>].tolist()</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>intake_fit <span class="op">=</span> intake_model.sample(</span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_intake, chains<span class="op">=</span><span class="dv">4</span>, parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>, iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.99</span>, max_treedepth<span class="op">=</span><span class="dv">15</span>, </span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>    show_progress <span class="op">=</span> <span class="va">False</span>, refresh <span class="op">=</span> <span class="dv">3000</span></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 3 Sampling Complete."</span>)</span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>fitsum <span class="op">=</span> intake_fit.summary()</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(fitsum[fitsum.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:35:23 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/intake_multilevel_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/intake_multilevel_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- 4. Running Model 3: Food Intake (Negative Binomial) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>21:35:34 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/intake_multilevel_model
+21:35:34 - cmdstanpy - INFO - CmdStan start processing
+21:35:34 - cmdstanpy - INFO - Chain [1] start processing
+21:35:34 - cmdstanpy - INFO - Chain [2] start processing
+21:35:34 - cmdstanpy - INFO - Chain [3] start processing
+21:35:34 - cmdstanpy - INFO - Chain [4] start processing
+21:37:01 - cmdstanpy - INFO - Chain [3] done processing
+21:37:02 - cmdstanpy - INFO - Chain [4] done processing
+21:37:03 - cmdstanpy - INFO - Chain [2] done processing
+21:37:09 - cmdstanpy - INFO - Chain [1] done processing
+21:37:09 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[4] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[11] is 0, but must be positive! (in 'intake_multilevel_model.stan', line 25, column 4 to column 35)
+Consider re-running with show_console=True if the above output is unclear!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 3 Sampling Complete.
+            Mean  MCSE  StdDev   MAD     5%    50%    95%  ESS_bulk  ESS_tail  \
+gamma[1]   4.435 0.022   0.726 0.318  2.909  4.653  5.060  1812.570  1272.410   
+gamma[2]   4.701 0.020   0.748 0.320  3.111  4.942  5.329  1807.640  1504.420   
+gamma[3]   4.562 0.013   0.444 0.173  3.759  4.668  4.942  2103.200  1257.550   
+gamma[4]   3.708 0.015   0.521 0.295  2.740  3.825  4.258  1968.950  1485.740   
+gamma[5]   4.350 0.013   0.358 0.164  3.891  4.408  4.676  2015.650  1028.950   
+gamma[6]   3.962 0.011   0.378 0.173  3.352  4.037  4.306  2221.310  1159.590   
+gamma[7]   4.146 0.005   0.241 0.147  3.740  4.179  4.422  3693.350  2126.130   
+gamma[8]   0.018 0.013   1.459 1.464 -2.423  0.035  2.394 12185.200  3972.110   
+gamma[9]   0.016 0.014   1.538 1.487 -2.556  0.027  2.541 13129.400  4159.120   
+gamma[10] -0.007 0.014   1.484 1.510 -2.461 -0.012  2.464 11615.300  4225.090   
+gamma[11] -0.009 0.015   1.513 1.474 -2.523 -0.036  2.511 10792.400  4450.950   
+gamma[12]  1.260 0.011   0.650 0.588  0.115  1.303  2.228  3864.350  3627.580   
+gamma[13]  0.005 0.014   1.514 1.512 -2.445  0.020  2.486 12280.100  4736.160   
+gamma[14]  0.681 0.012   0.675 0.588 -0.499  0.737  1.664  3729.340  3819.810   
+gamma[15] -3.050 0.013   0.969 0.900 -4.635 -3.034 -1.530  6327.610  3811.400   
+gamma[16] -0.209 0.010   0.617 0.500 -1.320 -0.130  0.639  4080.100  3795.340   
+gamma[17] -0.129 0.013   0.859 0.792 -1.587 -0.079  1.193  4418.820  3879.970   
+gamma[18] -0.738 0.011   0.719 0.632 -1.945 -0.723  0.415  4521.280  3869.090   
+gamma[19] -0.000 0.014   1.490 1.475 -2.468  0.011  2.481 11439.800  3817.030   
+gamma[20] -0.145 0.013   0.788 0.699 -1.505 -0.083  1.048  4179.240  3786.870   
+gamma[21] -1.099 0.013   0.932 0.858 -2.646 -1.088  0.404  5099.910  4556.460   
+
+           ESS_bulk/s  R_hat  
+gamma[1]       11.634  1.001  
+gamma[2]       11.602  1.002  
+gamma[3]       13.499  1.001  
+gamma[4]       12.637  1.001  
+gamma[5]       12.937  1.004  
+gamma[6]       14.257  1.002  
+gamma[7]       23.705  1.000  
+gamma[8]       78.209  1.001  
+gamma[9]       84.269  1.001  
+gamma[10]      74.551  1.002  
+gamma[11]      69.270  1.000  
+gamma[12]      24.803  1.000  
+gamma[13]      78.818  1.001  
+gamma[14]      23.936  1.001  
+gamma[15]      40.613  1.001  
+gamma[16]      26.188  1.001  
+gamma[17]      28.362  1.001  
+gamma[18]      29.019  1.000  
+gamma[19]      73.425  1.001  
+gamma[20]      26.824  1.001  
+gamma[21]      32.733  1.001  </code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

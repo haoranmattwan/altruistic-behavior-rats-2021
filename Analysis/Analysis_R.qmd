@@ -1,0 +1,303 @@
+---
+title: "Bayesian Analysis of Altruistic Food Sharing in Rats"
+author: "Haoran (Matt) Wan"
+date: "today"
+format: 
+  html:
+    toc: true
+    code-fold: true
+    self-contained: true
+engine: knitr
+---
+
+## Introduction
+
+This document replicates the statistical analyses from the publication "Failure to find altruistic food sharing in rats." The study's primary goal was to systematically examine the conditions under which a rat might share food with a partner, testing claims of altruism in prior literature. The analysis uses multi-level generalized linear models implemented in Stan to understand rat behavior across several experimental conditions.
+
+The full citation for the original article is:
+
+Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology*, *12*, Article 696025. https://doi.org/10.3389/fpsyg.2021.696025
+
+As stated in the publication, the original contributions, including the raw data and analytic scripts, are included in the Supplementary Material, which can be found at the following link: https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full
+
+**Models presented:**
+
+1.  A **hierarchical binomial logistic regression** to model the choice between food and social interaction.
+2.  A **hierarchical negative binomial regression** to model the rate of food and social responses.
+3.  A **hierarchical negative binomial regression** to model food pellet consumption and sharing.
+
+## 1. Setup and Environment
+
+This chunk loads the necessary R packages and prepares the data.
+
+```{r setup}
+#| message: false
+#| warning: false
+
+library(cmdstanr)
+library(readr)
+
+# Load the dataset
+behav_data <- read_csv("final versions/Data and analysis code/Raw_data.csv")
+
+# Ensure Subject ID is an integer factor for the Stan models
+behav_data$Subject <- as.integer(as.factor(behav_data$Rat))
+```
+
+## 2. Model 1: Food vs. Social Choice
+
+The first analysis models the proportion of choices made between food and social reinforcement. A hierarchical logistic regression was used to estimate the probability of a rat choosing the food lever over the social lever. As noted in the paper, Condition 5 is excluded from this analysis because it lacked a concurrent social option, making preference undefined.
+
+### Stan and R Code
+
+The chunk below first writes the Stan model code to a temporary file. It then compiles the model, prepares the data, and runs the sampler using `cmdstanr`. Finally, it prints a summary of the population-level parameters (`gamma`).
+
+```{r run_pair_model}
+#| cache: true
+
+# Stan code for the multilevel binomial model
+pair_model_code <- "
+data{
+	int<lower=1> N;         // Number of observations
+	int<lower=1> S;         // Number of subjects
+	array[N] int<lower=1> subID;  // Subject IDs
+	int<lower=1> C;         // Number of conditions
+	array[N] int<lower=1> condID; // Condition ID
+	array[N] int<lower=0> choice; // Number of choices per session
+	array[N] int<lower=0> food;   // Number of food choices (such that choose[s]-food[s]=social[s])
+}
+//
+transformed data {
+	vector[S] u;
+	for (s in 1:S) {
+		u[s] = 1;
+	}
+}
+//
+parameters{
+	matrix[C, S] z;                   // beta proxy
+	cholesky_factor_corr[C] L_Omega;  // prior correlation
+	vector<lower=0>[C] tau;           // prior scale
+	row_vector[C] gamma;              // population means
+}
+//
+transformed parameters{
+	matrix[S,C] beta;                 // individual coefficients for each subject in each condition
+	beta = u * gamma + (diag_pre_multiply(tau,L_Omega) * z)';
+}
+//
+model{
+	array[N] real mu;
+
+	to_vector(z) ~ normal(0,1);
+	L_Omega ~ lkj_corr_cholesky(2);
+	tau ~ exponential(1.5);
+	to_vector(gamma) ~ normal(0,1.5);
+
+	for ( n in 1:N ) {
+		mu[n] = beta[subID[n],condID[n]];
+	}
+	food ~ binomial_logit(choice,mu);
+}
+"
+
+# Write model to a .stan file
+stan_file_pair <- write_stan_file(pair_model_code)
+
+# Compile the Stan model using cmdstanr
+pair_model <- cmdstan_model(stan_file_pair)
+
+# Prepare data: filter out condition 5
+analysis_rows <- (behav_data$Condition != 5)
+data_subset <- behav_data[analysis_rows, ]
+data_subset$Condition_new <- data_subset$Condition
+data_subset$Condition_new[data_subset$Condition > 5] <- data_subset$Condition[data_subset$Condition > 5] - 1
+
+stan_data_choice <- list(
+  N = nrow(data_subset),
+  S = length(unique(data_subset$Subject)),
+  subID = data_subset$Subject,
+  C = length(unique(data_subset$Condition_new)),
+  condID = data_subset$Condition_new,
+  choice = data_subset$Social + data_subset$Food,
+  food = data_subset$Food
+)
+
+# Sample from the posterior distribution
+choice_fit <- pair_model$sample(
+  data = stan_data_choice,
+  chains = 4,
+  parallel_chains = 4,
+  iter_warmup = 1500,
+  iter_sampling = 1500,
+  adapt_delta = 0.99,
+  max_treedepth = 15,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
+)
+
+# Display a summary of the population-level parameters (gamma)
+choice_fit$summary(variables = "gamma")
+```
+
+## 3. Model 2: Response Rates by Type
+
+This model estimates the absolute number of food and social choices per session, rather than just the proportion. A hierarchical negative binomial regression was chosen to account for potential overdispersion in the count data.
+
+### Stan and R Code
+
+```{r run_resp_rate_model}
+#| cache: true
+
+# Stan code for the multilevel negative binomial model of response rates
+resp_rate_model_code <- "
+data {
+    int<lower=1> N;
+    int<lower=1> S;
+    array[N] int<lower=1> subID;
+    int<lower=1> C;
+    array[N] int<lower=1> condID;
+    array[N] int<lower=0> FC;
+    array[N] int SC;
+}
+parameters {
+    matrix[2*C, S] z;
+    cholesky_factor_corr[2*C] L_Omega;
+    vector<lower=0>[2*C] tau;
+    row_vector[2*C] gamma;
+    real<lower=0> overdisp;
+}
+transformed parameters {
+    matrix[S, 2*C] beta;
+    beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';
+}
+model {
+    to_vector(z) ~ std_normal();
+    L_Omega ~ lkj_corr_cholesky(2);
+    tau ~ exponential(1.5);
+    to_vector(gamma) ~ normal(1, 1.5);
+    overdisp ~ exponential(1);
+    
+    for (n in 1:N) {
+      FC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);
+      if (SC[n] >= 0) {
+        SC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);
+      }
+    }
+}
+"
+stan_file_resp_rate <- write_stan_file(resp_rate_model_code)
+resp_rate_model <- cmdstan_model(stan_file_resp_rate)
+
+# Prepare data for the response rate model
+stan_data_resp_rate <- list(
+  N = nrow(behav_data),
+  S = length(unique(behav_data$Subject)),
+  subID = behav_data$Subject,
+  C = length(unique(behav_data$Condition)),
+  condID = behav_data$Condition,
+  FC = behav_data$Food,
+  SC = behav_data$Social
+)
+
+# Sample from the posterior
+resp_rate_fit <- resp_rate_model$sample(
+  data = stan_data_resp_rate,
+  chains = 4,
+  parallel_chains = 4,
+  iter_warmup = 1500,
+  iter_sampling = 1500,
+  adapt_delta = 0.99,
+  max_treedepth = 15,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
+)
+
+# Display a summary
+resp_rate_fit$summary(variables = "gamma")
+```
+
+## 4. Model 3: Food Intake and Sharing
+
+The final model analyzes the counts of food pellets that were consumed, "shared," or left behind. Sharing was operationally defined as a sequence where the focal rat produces food, then releases the social partner while food remains available.
+
+### Stan and R Code
+
+```{r run_intake_model}
+#| cache: true
+
+# Stan code for the multilevel negative binomial model of food intake
+intake_model_code <- "
+data {
+    int<lower=1> N;
+    int<lower=1> S;
+    array[N] int<lower=1> subID;
+    int<lower=1> C;
+    array[N] int<lower=1> condID;
+    array[N] int<lower=0> CP;
+    array[N] int LP;
+    array[N] int SP;
+}
+parameters {
+    matrix[3*C, S] z;
+    cholesky_factor_corr[3*C] L_Omega;
+    vector<lower=0>[3*C] tau;
+    row_vector[3*C] gamma;
+    real<lower=0> overdisp;
+}
+transformed parameters {
+    matrix[S, 3*C] beta;
+    beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';
+}
+model {
+    to_vector(z) ~ std_normal();
+    L_Omega ~ lkj_corr_cholesky(2);
+    tau ~ exponential(1.5);
+    to_vector(gamma) ~ normal(0, 1.5);
+    overdisp ~ exponential(1);
+    
+    for (n in 1:N) {
+      CP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);
+      if (LP[n] >= 0) {
+        LP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);
+      }
+      if (SP[n] >= 0) {
+        SP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + (2*C)], overdisp);
+      }
+    }
+}
+"
+stan_file_intake <- write_stan_file(intake_model_code)
+intake_model <- cmdstan_model(stan_file_intake)
+
+# Prepare data for the intake model
+stan_data_intake <- list(
+  N = nrow(behav_data),
+  S = length(unique(behav_data$Subject)),
+  subID = behav_data$Subject,
+  C = length(unique(behav_data$Condition)),
+  condID = behav_data$Condition,
+  CP = behav_data$Food * behav_data$FoodAmmt,
+  SP = behav_data$Sharing,
+  LP = behav_data$PelletsLeft
+)
+
+# Sample from the posterior
+intake_fit <- intake_model$sample(
+  data = stan_data_intake,
+  chains = 4,
+  parallel_chains = 4,
+  iter_warmup = 1500,
+  iter_sampling = 1500,
+  adapt_delta = 0.99,
+  max_treedepth = 15,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
+)
+
+# Display a summary
+intake_fit$summary(variables = "gamma")
+```
