@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Haoran (Matt) Wan">
-<meta name="dcterms.date" content="2025-10-26">
+<meta name="dcterms.date" content="2025-10-30">
 
 <title>Bayesian Analysis of Food Sharing Behavior in Rats</title>
 <style>
@@ -2221,7 +2221,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 26, 2025</p>
+      <p class="date">October 30, 2025</p>
     </div>
   </div>
   
@@ -2239,7 +2239,7 @@ vertical-align: -.125em;
 <blockquote class="blockquote">
 <p>Wan, H., Kirkman, C. F., Jensen, G., &amp; Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. <em>Frontiers in Psychology</em>, <em>12</em>, Article 696025. https://doi.org/10.3389/fpsyg.2021.696025</p>
 </blockquote>
-<p>The study’s primary goal was to conduct a systematic replication to critically evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.</p>
+<p>The study’s primary goal was to conduct a systematic replication to evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.</p>
 <p>The data and original analysis scripts are available in the Supplementary Material of the original publication at the <strong><a href="https://www.frontiersin.org/articles/10.3389/fpsyg.2021.696025/full#supplementary-material">publisher’s website</a></strong>.</p>
 </section>
 <section id="analytical-approach" class="level2">
@@ -2283,11 +2283,25 @@ vertical-align: -.125em;
 <section id="model-1-choice-proportion-food-vs.-social" class="level2">
 <h2 class="anchored" data-anchor-id="model-1-choice-proportion-food-vs.-social">2. Model 1: Choice Proportion (Food vs. Social)</h2>
 <p>The first analysis models the rats’ <strong>preference</strong> between the food and social options. We use a <strong>Bayesian hierarchical binomial logistic regression</strong> to estimate the probability of choosing the food lever over the social lever in each experimental condition.</p>
-<p><strong>Model Structure:</strong> * <strong>Outcome:</strong> The number of <code>Food</code> choices out of the total <code>Social + Food</code> choices in each session. * <strong>Likelihood:</strong> Binomial distribution with a logit link function. * <strong>Predictors:</strong> Experimental condition (as a categorical variable). * <strong>Hierarchical Component:</strong> The model includes varying intercepts for each <code>Subject</code> within each <code>Condition</code>. This accounts for individual differences in preference and how those differences might change across conditions. The <code>gamma</code> parameters represent the population-level average log-odds of choosing food in each condition.</p>
+<p><strong>Model Structure:</strong></p>
+<ul>
+<li><strong>Outcome:</strong> The number of <code>Food</code> choices out of the total <code>Social + Food</code> choices in each session.</li>
+<li><strong>Likelihood:</strong> Binomial distribution with a logit link function.</li>
+<li><strong>Predictors:</strong> Experimental condition (as a categorical variable).</li>
+<li><strong>Hierarchical Component:</strong> The model includes varying intercepts for each <code>Subject</code> within each <code>Condition</code>. This accounts for individual differences in preference and how those differences might change across conditions. The <code>gamma</code> parameters represent the population-level average log-odds of choosing food in each condition.</li>
+</ul>
 <p><strong>Data Subsetting:</strong> As noted in the publication, Condition 5 is excluded from this analysis because only the food lever was active (no social choice was available), making preference undefined for that condition.</p>
 <section id="stan-model-code-and-execution" class="level3">
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution">Stan Model Code and Execution</h3>
-<p>The R chunk below performs the following steps: 1. Defines the Stan model code for the hierarchical logistic regression. 2. Writes the code to a temporary <code>.stan</code> file. 3. Compiles the Stan model using <code>cmdstanr</code>. 4. Prepares the data list required by the Stan model, including filtering out Condition 5 and re-indexing the conditions. 5. Runs the MCMC sampler to draw samples from the posterior distribution. 6. Prints a summary table focused on the population-level coefficients (<code>gamma</code>), which represent the average preference in each condition on the log-odds scale.</p>
+<p>The R chunk below performs the following steps:</p>
+<ol type="1">
+<li>Defines the Stan model code for the hierarchical logistic regression.</li>
+<li>Writes the code to a temporary <code>.stan</code> file.</li>
+<li>Compiles the Stan model using <code>cmdstanr</code>.</li>
+<li>Prepares the data list required by the Stan model, including filtering out Condition 5 and re-indexing the conditions.</li>
+<li>Runs the MCMC sampler to draw samples from the posterior distribution.</li>
+<li>Prints a summary table focused on the population-level coefficients (<code>gamma</code>), which represent the average preference in each condition on the log-odds scale.</li>
+</ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2.1 Stan Model Definition (Binomial Logistic Regression) ---</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2369,7 +2383,7 @@ vertical-align: -.125em;
 <span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>  <span class="at">C =</span> <span class="fu">length</span>(<span class="fu">unique</span>(data_subset_choice<span class="sc">$</span>Condition_Stan)),</span>
 <span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">condID =</span> data_subset_choice<span class="sc">$</span>Condition_Stan,</span>
 <span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">choice =</span> data_subset_choice<span class="sc">$</span>Social <span class="sc">+</span> data_subset_choice<span class="sc">$</span>Food, <span class="co"># Total choices</span></span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">food =</span> data_subset_choice<span class="sc">$</span>Food                              <span class="co"># Number of successes (food choices)</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">food =</span> data_subset_choice<span class="sc">$</span>Food                                <span class="co"># Number of successes (food choices)</span></span>
 <span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2.4 Run MCMC Sampler ---</span></span>
@@ -2399,12 +2413,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 10
   variable    mean  median    sd   mad      q5   q95  rhat ess_bulk ess_tail
   &lt;chr&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-1 gamma[1]  2.28    2.37   0.613 0.507  1.17   3.10   1.00    3054.    3077.
-2 gamma[2]  1.75    1.81   0.658 0.572  0.567  2.68   1.00    3475.    3366.
-3 gamma[3]  0.658   0.673  0.416 0.341 -0.0326 1.31   1.00    3577.    3470.
-4 gamma[4] -0.0445 -0.0452 0.262 0.175 -0.423  0.354  1.00    3538.    2836.
-5 gamma[5]  0.0895  0.0901 0.185 0.139 -0.181  0.364  1.00    4358.    3577.
-6 gamma[6]  0.261   0.265  0.443 0.367 -0.465  0.945  1.00    3899.    3551.</code></pre>
+1 gamma[1]  2.27    2.37   0.615 0.490  1.12   3.08   1.00    2208.    2469.
+2 gamma[2]  1.75    1.80   0.647 0.553  0.588  2.68   1.00    2842.    3253.
+3 gamma[3]  0.655   0.670  0.430 0.335 -0.0470 1.29   1.00    2959.    2591.
+4 gamma[4] -0.0341 -0.0387 0.249 0.170 -0.402  0.354  1.00    3886.    3456.
+5 gamma[5]  0.0996  0.0936 0.189 0.136 -0.165  0.371  1.00    3860.    3164.
+6 gamma[6]  0.259   0.257  0.454 0.352 -0.462  0.983  1.00    3561.    3042.</code></pre>
 </div>
 </div>
 </section>
@@ -2412,7 +2426,13 @@ vertical-align: -.125em;
 <section id="model-2-response-counts-food-and-social" class="level2">
 <h2 class="anchored" data-anchor-id="model-2-response-counts-food-and-social">3. Model 2: Response Counts (Food and Social)</h2>
 <p>While the first model examined the rats’ <strong>preference</strong> (proportion of choices), this second analysis models the <strong>absolute rate</strong> of responding for food and social interaction in each session. This allows us to see if the experimental conditions affected the overall number of choices made, not just the distribution between the two options.</p>
-<p><strong>Model Structure:</strong> * <strong>Outcome:</strong> The number of <code>Food</code> choices and <code>Social</code> choices per session (modeled simultaneously). * <strong>Likelihood:</strong> <strong>Negative Binomial distribution</strong>. This is a generalization of the Poisson distribution that is appropriate for count data. It includes an extra parameter to account for <strong>overdispersion</strong>—the tendency for the variance in behavioral count data to be greater than the mean—which is common in this type of experiment. * <strong>Predictors:</strong> Experimental condition and response type (Food vs. Social). * <strong>Hierarchical Component:</strong> The model estimates a unique population-level log-rate (<code>gamma</code>) for each response type in each condition. It also includes varying intercepts for each <code>Subject</code>, allowing each rat’s baseline response rate to differ from the population average.</p>
+<p><strong>Model Structure:</strong></p>
+<ul>
+<li><strong>Outcome:</strong> The number of <code>Food</code> choices and <code>Social</code> choices per session (modeled simultaneously).</li>
+<li><strong>Likelihood:</strong> <strong>Negative Binomial distribution</strong>. This is a generalization of the Poisson distribution that is appropriate for count data. It includes an extra parameter to account for <strong>overdispersion</strong>—the tendency for the variance in behavioral count data to be greater than the mean—which is common in this type of experiment.</li>
+<li><strong>Predictors:</strong> Experimental condition and response type (Food vs. Social).</li>
+<li><strong>Hierarchical Component:</strong> The model estimates a unique population-level log-rate (<code>gamma</code>) for each response type in each condition. It also includes varying intercepts for each <code>Subject</code>, allowing each rat’s baseline response rate to differ from the population average.</li>
+</ul>
 <section id="stan-model-code-and-execution-1" class="level3">
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution-1">Stan Model Code and Execution</h3>
 <p>The R chunk below follows the same process as before: defining, compiling, preparing data for, and running a custom Stan model. The key difference is the use of a negative binomial likelihood to model the response counts. The summary table shows the <code>gamma</code> parameters, which represent the population-level log-rates for food choices (<code>gamma[1]</code> to <code>gamma[7]</code>) and social choices (<code>gamma[8]</code> to <code>gamma[14]</code>) in each of the seven conditions.</p>
@@ -2514,20 +2534,20 @@ vertical-align: -.125em;
 <pre><code># A tibble: 14 × 10
    variable   mean median    sd   mad    q5   q95  rhat ess_bulk ess_tail
    &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
- 1 gamma[1]   4.61   4.71 0.486 0.297  3.65  5.15  1.00    2786.    2200.
- 2 gamma[2]   4.24   4.32 0.439 0.267  3.49  4.73  1.00    2616.    1929.
- 3 gamma[3]   3.27   3.31 0.269 0.155  2.81  3.59  1.00    2837.    2098.
- 4 gamma[4]   2.46   2.49 0.359 0.258  1.86  2.95  1.00    3731.    3090.
- 5 gamma[5]   2.81   2.82 0.217 0.142  2.47  3.08  1.00    3740.    2320.
- 6 gamma[6]   2.45   2.46 0.228 0.153  2.10  2.75  1.00    3531.    2858.
- 7 gamma[7]   2.58   2.59 0.205 0.134  2.27  2.83  1.00    3361.    2103.
- 8 gamma[8]   2.08   2.12 0.396 0.305  1.39  2.63  1.00    3894.    3636.
- 9 gamma[9]   2.11   2.16 0.543 0.452  1.15  2.90  1.00    4272.    3660.
-10 gamma[10]  2.40   2.46 0.462 0.378  1.59  3.03  1.00    4350.    3795.
-11 gamma[11]  2.41   2.45 0.472 0.392  1.58  3.11  1.00    4126.    3615.
-12 gamma[12]  1.01   1.02 1.47  1.45  -1.42  3.45  1.00   15607.    3802.
-13 gamma[13]  2.31   2.34 0.307 0.204  1.81  2.71  1.00    3726.    3168.
-14 gamma[14]  2.09   2.14 0.516 0.428  1.19  2.83  1.00    4254.    3481.</code></pre>
+ 1 gamma[1]   4.61  4.72  0.495 0.288  3.72  5.14  1.00    2308.    1932.
+ 2 gamma[2]   4.23  4.32  0.448 0.287  3.41  4.74  1.00    1662.    1780.
+ 3 gamma[3]   3.27  3.31  0.280 0.158  2.83  3.61  1.00    2390.    1751.
+ 4 gamma[4]   2.47  2.49  0.342 0.252  1.86  2.95  1.00    3116.    2653.
+ 5 gamma[5]   2.82  2.82  0.199 0.142  2.50  3.08  1.00    3459.    2591.
+ 6 gamma[6]   2.43  2.45  0.237 0.154  2.07  2.73  1.00    3487.    2043.
+ 7 gamma[7]   2.58  2.59  0.186 0.133  2.28  2.83  1.00    3609.    2607.
+ 8 gamma[8]   2.08  2.12  0.397 0.306  1.39  2.63  1.00    3178.    3015.
+ 9 gamma[9]   2.12  2.16  0.543 0.458  1.18  2.93  1.00    3332.    3246.
+10 gamma[10]  2.41  2.46  0.460 0.376  1.57  3.07  1.00    3218.    3038.
+11 gamma[11]  2.43  2.47  0.468 0.376  1.60  3.09  1.00    3305.    2749.
+12 gamma[12]  1.00  0.989 1.50  1.50  -1.48  3.46  1.00   13937.    4487.
+13 gamma[13]  2.31  2.34  0.318 0.203  1.77  2.73  1.00    2784.    1889.
+14 gamma[14]  2.11  2.14  0.511 0.418  1.21  2.84  1.00    3154.    2955.</code></pre>
 </div>
 </div>
 </section>
@@ -2536,7 +2556,13 @@ vertical-align: -.125em;
 <h2 class="anchored" data-anchor-id="model-3-pellet-allocation-consumed-vs.-shared">4. Model 3: Pellet Allocation (Consumed vs. Shared)</h2>
 <p>This final analysis addresses the central question of the study: <strong>do rats altruistically share food?</strong> We model the number of food pellets that were <strong>consumed</strong> by the focal rat versus the number that were <strong>shared</strong> (i.e., produced but left available for the partner rat).</p>
 <p>This model allows us to directly quantify and test the rate of sharing behavior across the different experimental conditions, providing a direct test of the altruism hypothesis.</p>
-<p><strong>Model Structure:</strong> * <strong>Outcome:</strong> The number of <code>Consumed_Food</code> pellets and <code>Shared_Food</code> pellets per session. * <strong>Likelihood:</strong> <strong>Negative Binomial distribution</strong>, again used to correctly model overdispersed count data. * <strong>Predictors:</strong> Experimental condition and pellet type (Consumed vs. Shared). * <strong>Hierarchical Component:</strong> The model estimates a population-level log-rate (<code>gamma</code>) for each pellet type in each condition, with varying intercepts for each <code>Subject</code>.</p>
+<p><strong>Model Structure:</strong></p>
+<ul>
+<li><strong>Outcome:</strong> The number of <code>Consumed_Food</code> pellets and <code>Shared_Food</code> pellets per session.</li>
+<li><strong>Likelihood:</strong> <strong>Negative Binomial distribution</strong>, again used to correctly model overdispersed count data.</li>
+<li><strong>Predictors:</strong> Experimental condition and pellet type (Consumed vs. Shared).</li>
+<li><strong>Hierarchical Component:</strong> The model estimates a population-level log-rate (<code>gamma</code>) for each pellet type in each condition, with varying intercepts for each <code>Subject</code>.</li>
+</ul>
 <section id="stan-model-code-and-execution-2" class="level3">
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution-2">Stan Model Code and Execution</h3>
 <p>The structure of this model is nearly identical to Model 2, but the input data is now the counts of consumed and shared pellets. The summary table for <code>gamma</code> shows the population-level log-rates for consumed pellets (<code>gamma[1]</code> to <code>gamma[7]</code>) and shared pellets (<code>gamma[8]</code> to <code>gamma[14]</code>).</p>
@@ -2629,20 +2655,20 @@ vertical-align: -.125em;
 <pre><code># A tibble: 14 × 10
    variable   mean median    sd   mad     q5   q95  rhat ess_bulk ess_tail
    &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
- 1 gamma[1]  4.60   4.71  0.481 0.276  3.70   5.12 1.00     1631.    1245.
- 2 gamma[2]  4.22   4.32  0.449 0.264  3.37   4.71 1.01     1516.     923.
- 3 gamma[3]  3.28   3.32  0.261 0.152  2.84   3.60 1.00     2670.    2033.
- 4 gamma[4]  2.49   2.52  0.347 0.254  1.89   2.99 1.00     2775.    2430.
- 5 gamma[5]  2.81   2.82  0.226 0.155  2.47   3.09 1.00     2735.    1636.
- 6 gamma[6]  2.45   2.46  0.217 0.158  2.11   2.73 1.00     2643.    1832.
- 7 gamma[7]  2.58   2.59  0.211 0.141  2.28   2.85 1.00     3176.    2016.
- 8 gamma[8]  1.00   1.03  1.51  1.52  -1.51   3.48 1.000    9056.    4528.
- 9 gamma[9]  0.990  0.987 1.51  1.53  -1.48   3.43 1.00     8041.    4564.
-10 gamma[10] 0.989  0.994 1.51  1.52  -1.50   3.47 1.00     8117.    4567.
-11 gamma[11] 1.02   1.00  1.49  1.52  -1.45   3.51 1.00     8765.    4805.
-12 gamma[12] 1.41   1.43  0.618 0.553  0.358  2.38 1.00     3490.    3185.
-13 gamma[13] 0.991  0.978 1.50  1.50  -1.43   3.47 1.00     8344.    4658.
-14 gamma[14] 0.863  0.892 0.636 0.566 -0.205  1.84 1.00     3232.    3365.</code></pre>
+ 1 gamma[1]  4.60   4.70  0.467 0.280  3.72   5.11  1.00    1948.    1625.
+ 2 gamma[2]  4.24   4.32  0.418 0.251  3.48   4.72  1.00    1768.    1749.
+ 3 gamma[3]  3.29   3.32  0.239 0.149  2.90   3.59  1.00    3116.    2390.
+ 4 gamma[4]  2.49   2.52  0.343 0.255  1.89   2.99  1.00    2861.    2351.
+ 5 gamma[5]  2.81   2.82  0.216 0.144  2.49   3.09  1.00    3173.    1883.
+ 6 gamma[6]  2.44   2.46  0.229 0.159  2.09   2.74  1.00    3599.    2320.
+ 7 gamma[7]  2.58   2.59  0.204 0.143  2.27   2.83  1.00    2873.    1658.
+ 8 gamma[8]  0.988  0.994 1.47  1.41  -1.45   3.41  1.00   10660.    4170.
+ 9 gamma[9]  1.01   1.01  1.50  1.54  -1.44   3.44  1.00   10126.    4671.
+10 gamma[10] 0.991  1.02  1.50  1.47  -1.47   3.46  1.00   10128.    3953.
+11 gamma[11] 1.01   1.01  1.49  1.51  -1.42   3.46  1.00   11315.    4627.
+12 gamma[12] 1.42   1.44  0.627 0.554  0.380  2.39  1.00    3875.    3591.
+13 gamma[13] 0.994  0.998 1.50  1.48  -1.46   3.46  1.00   11315.    4254.
+14 gamma[14] 0.881  0.911 0.638 0.553 -0.192  1.87  1.00    4014.    4175.</code></pre>
 </div>
 </div>
 </section>

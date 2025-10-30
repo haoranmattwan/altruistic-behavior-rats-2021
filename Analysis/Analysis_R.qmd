@@ -22,7 +22,7 @@ This document provides the complete R code to replicate the Bayesian statistical
 
 > Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology*, *12*, Article 696025. https://doi.org/10.3389/fpsyg.2021.696025
 
-The study's primary goal was to conduct a systematic replication to critically evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.
+The study's primary goal was to conduct a systematic replication to evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.
 
 The data and original analysis scripts are available in the Supplementary Material of the original publication at the **[publisher's website](https://www.frontiersin.org/articles/10.3389/fpsyg.2021.696025/full#supplementary-material)**.
 
@@ -68,6 +68,7 @@ analysis_data$Subject <- as.integer(as.factor(analysis_data$Rat))
 The first analysis models the rats' **preference** between the food and social options. We use a **Bayesian hierarchical binomial logistic regression** to estimate the probability of choosing the food lever over the social lever in each experimental condition.
 
 **Model Structure:**
+
 * **Outcome:** The number of `Food` choices out of the total `Social + Food` choices in each session.
 * **Likelihood:** Binomial distribution with a logit link function.
 * **Predictors:** Experimental condition (as a categorical variable).
@@ -78,6 +79,7 @@ The first analysis models the rats' **preference** between the food and social o
 ### Stan Model Code and Execution
 
 The R chunk below performs the following steps:
+
 1.  Defines the Stan model code for the hierarchical logistic regression.
 2.  Writes the code to a temporary `.stan` file.
 3.  Compiles the Stan model using `cmdstanr`.
@@ -166,7 +168,7 @@ stan_data_choice <- list(
   C = length(unique(data_subset_choice$Condition_Stan)),
   condID = data_subset_choice$Condition_Stan,
   choice = data_subset_choice$Social + data_subset_choice$Food, # Total choices
-  food = data_subset_choice$Food                              # Number of successes (food choices)
+  food = data_subset_choice$Food                                # Number of successes (food choices)
 )
 
 # --- 2.4 Run MCMC Sampler ---
@@ -196,6 +198,7 @@ choice_model_fit$summary(variables = "gamma")
 While the first model examined the rats' **preference** (proportion of choices), this second analysis models the **absolute rate** of responding for food and social interaction in each session. This allows us to see if the experimental conditions affected the overall number of choices made, not just the distribution between the two options.
 
 **Model Structure:**
+
 * **Outcome:** The number of `Food` choices and `Social` choices per session (modeled simultaneously).
 * **Likelihood:** **Negative Binomial distribution**. This is a generalization of the Poisson distribution that is appropriate for count data. It includes an extra parameter to account for **overdispersion**—the tendency for the variance in behavioral count data to be greater than the mean—which is common in this type of experiment.
 * **Predictors:** Experimental condition and response type (Food vs. Social).
@@ -305,6 +308,7 @@ This final analysis addresses the central question of the study: **do rats altru
 This model allows us to directly quantify and test the rate of sharing behavior across the different experimental conditions, providing a direct test of the altruism hypothesis.
 
 **Model Structure:**
+
 * **Outcome:** The number of `Consumed_Food` pellets and `Shared_Food` pellets per session.
 * **Likelihood:** **Negative Binomial distribution**, again used to correctly model overdispersed count data.
 * **Predictors:** Experimental condition and pellet type (Consumed vs. Shared).

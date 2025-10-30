@@ -111,7 +111,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <blockquote class="blockquote">
 <p>Wan, H., Kirkman, C. F., Jensen, G., &amp; Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. <em>Frontiers in Psychology</em>, <em>12</em>, Article 696025. https://doi.org/10.3389/fpsyg.2021.696025</p>
 </blockquote>
-<p>The study’s primary goal was to conduct a systematic replication to critically evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.</p>
+<p>The study’s primary goal was to conduct a systematic replication to evaluate prior claims of altruistic food sharing in rats. The experiment involved rats choosing between food rewards and social interaction under varying conditions of food availability and motivation.</p>
 <p>The data and original analysis scripts are available in the Supplementary Material of the original publication at the <strong><a href="https://www.frontiersin.org/articles/10.3389/fpsyg.2021.696025/full#supplementary-material">publisher’s website</a></strong>.</p>
 </section>
 <section id="analytical-approach" class="level3">
@@ -131,7 +131,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Model 2 (Response Counts)</strong>: Fit and summarize the negative binomial model for total food/social responses.</li>
 <li><strong>Model 3 (Pellet Allocation)</strong>: Fit and summarize the negative binomial model for consumed/shared pellets.</li>
 </ol>
-<div id="a5cb17af" class="cell" data-execution_count="34">
+<div id="a5cb17af" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Environment Setup ---</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This cell installs the required Python packages for the analysis.</span></span>
@@ -140,7 +140,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># import sys</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># !{sys.executable} -m pip install pandas cmdstanpy</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="acd7ffaa" class="cell" data-execution_count="35">
+<div id="acd7ffaa" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1. SETUP: IMPORTS AND DATA PREPARATION ---</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 1.1 Load Libraries ---</span></span>
@@ -167,13 +167,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the 'Rat' identifier into a sequential, 1-based integer factor ('Subject').</span></span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Stan models require integer indices for group-level parameters.</span></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>analysis_df <span class="op">=</span> raw_df.copy()</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>analysis_df[<span class="st">'Subject'</span>] <span class="op">=</span> analysis_df[<span class="st">'Rat'</span>].astype(<span class="st">'category'</span>).cat.codes <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows to confirm loading and preparation</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Data prepared successfully."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>analysis_df[<span class="st">'Subject'</span>] <span class="op">=</span> analysis_df[<span class="st">'Rat'</span>].astype(<span class="st">'category'</span>).cat.codes <span class="op">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>--- Loading and Preparing Data ---
-Data prepared successfully.</code></pre>
+<pre><code>--- Loading and Preparing Data ---</code></pre>
 </div>
 </div>
 </section>
@@ -185,7 +181,7 @@ Data prepared successfully.</code></pre>
 <section id="stan-model-code-and-execution" class="level3">
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution">Stan Model Code and Execution</h3>
 <p>The Python cell below performs the following steps: 1. Defines the Stan model code as a multi-line string. 2. Writes the code to a <code>.stan</code> file. 3. Compiles the Stan model using <code>cmdstanpy</code>. 4. Prepares the data dictionary required by the Stan model, including filtering out Condition 5 and re-indexing the remaining conditions sequentially. 5. Runs the MCMC sampler to draw samples from the posterior distribution. 6. Prints a summary table focused on the population-level coefficients (<code>gamma</code>), which represent the average preference in each condition on the log-odds scale.</p>
-<div id="9a148dd7" class="cell" data-execution_count="36">
+<div id="9a148dd7" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2.1 Stan Model Definition (Binomial Logistic Regression) ---</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -268,7 +264,7 @@ Data prepared successfully.</code></pre>
 <span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>  <span class="st">"C"</span>: data_subset_choice[<span class="st">'Condition_Stan'</span>].nunique(),</span>
 <span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>  <span class="st">"condID"</span>: data_subset_choice[<span class="st">'Condition_Stan'</span>].tolist(),</span>
 <span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>  <span class="st">"choice"</span>: (data_subset_choice[<span class="st">'Social'</span>] <span class="op">+</span> data_subset_choice[<span class="st">'Food'</span>]).tolist(), <span class="co"># Total trials</span></span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>  <span class="st">"food"</span>: data_subset_choice[<span class="st">'Food'</span>].tolist()                                  <span class="co"># Number of successes</span></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>  <span class="st">"food"</span>: data_subset_choice[<span class="st">'Food'</span>].tolist()                                     <span class="co"># Number of successes</span></span>
 <span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 2.4 Run MCMC Sampler ---</span></span>
@@ -294,11 +290,54 @@ Data prepared successfully.</code></pre>
 <span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>gamma_summary_choice <span class="op">=</span> summary_choice[summary_choice.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
 <span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_choice)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>--- Compiling Model 1 (Choice Proportion) ---
-Model 1 compiled successfully.
+<pre><code>--- Compiling Model 1 (Choice Proportion) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:35:21 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/stan_models/choice_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/stan_models/choice_model
+13:35:34 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/stan_models/choice_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 1 compiled successfully.
 
---- Running MCMC Sampler for Model 1 ---
-Model 1 sampling complete.
+--- Running MCMC Sampler for Model 1 ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:35:34 - cmdstanpy - INFO - CmdStan start processing
+13:35:34 - cmdstanpy - INFO - Chain [1] start processing
+13:35:34 - cmdstanpy - INFO - Chain [2] start processing
+13:35:34 - cmdstanpy - INFO - Chain [3] start processing
+13:35:34 - cmdstanpy - INFO - Chain [4] start processing
+13:35:41 - cmdstanpy - INFO - Chain [2] done processing
+13:35:41 - cmdstanpy - INFO - Chain [4] done processing
+13:35:42 - cmdstanpy - INFO - Chain [3] done processing
+13:35:42 - cmdstanpy - INFO - Chain [1] done processing
+13:35:42 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[6] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[6] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[4] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[4] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'choice_model.stan', line 35, column 2 to column 33)
+Consider re-running with show_console=True if the above output is unclear!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 1 sampling complete.
 
 --- Summary of Population-Level Parameters (gamma: Log-Odds of Food Choice) ---</code></pre>
 </div>
@@ -326,87 +365,87 @@ Model 1 sampling complete.
 <tbody>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[1]</td>
-<td>2.276</td>
+<td>2.273</td>
 <td>0.012</td>
-<td>0.615</td>
-<td>0.495</td>
-<td>1.131</td>
-<td>2.363</td>
-<td>3.106</td>
-<td>3163.970</td>
-<td>3048.760</td>
-<td>275.199</td>
-<td>1.000</td>
+<td>0.617</td>
+<td>0.481</td>
+<td>1.111</td>
+<td>2.357</td>
+<td>3.093</td>
+<td>2975.430</td>
+<td>2909.690</td>
+<td>196.437</td>
+<td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[2]</td>
-<td>1.738</td>
+<td>1.722</td>
 <td>0.012</td>
-<td>0.653</td>
-<td>0.561</td>
-<td>0.568</td>
-<td>1.810</td>
-<td>2.668</td>
-<td>3101.390</td>
-<td>3413.320</td>
-<td>269.757</td>
-<td>1.001</td>
+<td>0.670</td>
+<td>0.583</td>
+<td>0.517</td>
+<td>1.778</td>
+<td>2.717</td>
+<td>3407.590</td>
+<td>3571.120</td>
+<td>224.968</td>
+<td>1.002</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[3]</td>
-<td>0.662</td>
+<td>0.669</td>
 <td>0.007</td>
-<td>0.414</td>
-<td>0.344</td>
-<td>-0.020</td>
-<td>0.668</td>
-<td>1.308</td>
-<td>3869.470</td>
-<td>3244.800</td>
-<td>336.563</td>
-<td>1.001</td>
+<td>0.422</td>
+<td>0.338</td>
+<td>-0.001</td>
+<td>0.675</td>
+<td>1.329</td>
+<td>3626.660</td>
+<td>3295.260</td>
+<td>239.431</td>
+<td>1.000</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[4]</td>
-<td>-0.035</td>
-<td>0.004</td>
-<td>0.236</td>
-<td>0.170</td>
-<td>-0.400</td>
 <td>-0.039</td>
-<td>0.334</td>
-<td>4283.510</td>
-<td>3597.770</td>
-<td>372.576</td>
-<td>1.000</td>
+<td>0.006</td>
+<td>0.275</td>
+<td>0.180</td>
+<td>-0.430</td>
+<td>-0.047</td>
+<td>0.361</td>
+<td>3459.910</td>
+<td>2815.740</td>
+<td>228.422</td>
+<td>1.001</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[5]</td>
-<td>0.091</td>
+<td>0.094</td>
 <td>0.004</td>
-<td>0.190</td>
-<td>0.136</td>
-<td>-0.192</td>
-<td>0.093</td>
-<td>0.362</td>
-<td>3628.840</td>
-<td>2947.770</td>
-<td>315.634</td>
-<td>1.001</td>
+<td>0.207</td>
+<td>0.141</td>
+<td>-0.200</td>
+<td>0.090</td>
+<td>0.389</td>
+<td>3375.950</td>
+<td>2385.790</td>
+<td>222.879</td>
+<td>1.000</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[6]</td>
 <td>0.250</td>
-<td>0.007</td>
-<td>0.455</td>
-<td>0.363</td>
-<td>-0.479</td>
-<td>0.254</td>
-<td>0.995</td>
-<td>4150.520</td>
-<td>3496.510</td>
-<td>361.009</td>
-<td>1.000</td>
+<td>0.008</td>
+<td>0.449</td>
+<td>0.376</td>
+<td>-0.481</td>
+<td>0.256</td>
+<td>0.951</td>
+<td>3861.410</td>
+<td>3634.710</td>
+<td>254.929</td>
+<td>1.001</td>
 </tr>
 </tbody>
 </table>
@@ -423,107 +462,156 @@ Model 1 sampling complete.
 <section id="stan-model-code-and-execution-1" class="level3">
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution-1">Stan Model Code and Execution</h3>
 <p>The Python cell below follows the same process as before: defining, compiling, preparing data for, and running a custom Stan model. The key difference is the use of a negative binomial likelihood to model the response counts. The summary table shows the <code>gamma</code> parameters, which represent the population-level log-rates for food choices (<code>gamma[1]</code> to <code>gamma[7]</code>) and social choices (<code>gamma[8]</code> to <code>gamma[14]</code>) in each of the seven conditions.</p>
-<div id="02f1f759" class="cell" data-execution_count="37">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.1 Stan Model Definition (Negative Binomial Regression) ---</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This model estimates the rate of Food and Social choices, accounting for</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># overdispersion in the count data. It's more complex because it models two</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># outcomes simultaneously.</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>rate_model_code <span class="op">=</span> <span class="st">"""</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;                // Number of observations</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; S;                // Number of subjects</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; subID;   // Subject ID for each observation</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; C;                // Number of conditions</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; condID;  // Condition ID for each observation</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; FC;      // Food choices (counts)</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int SC;               // Social choices (counts), allows non-positive for NA handling</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">  // Parameters are now size 2*C to model both Food and Social responses</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[2*C, S] z;                 // Standardized subject deviations</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">  cholesky_factor_corr[2*C] L_Omega;// Cholesky factor of the correlation matrix</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="st">  vector&lt;lower=0&gt;[2*C] tau;         // Scale parameters for varying effects</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="st">  row_vector[2*C] gamma;            // Population-level log-rates</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; overdisp;           // Overdispersion parameter for the negative binomial</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // Calculate subject-specific log-rates (beta) for each response type and condition</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[S, 2*C] beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Priors ---</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(z) ~ std_normal();</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="st">  L_Omega ~ lkj_corr_cholesky(2);</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="st">  tau ~ exponential(1.5);</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(gamma) ~ normal(1, 1.5); // Prior centered at log(2.7) choices</span></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="st">  overdisp ~ exponential(1);</span></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Likelihood ---</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="st">    // Food choices are modeled for all conditions (parameters 1 through C)</span></span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="st">    FC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="st">    // Social choices are only modeled if they are not NA (passed as -1).</span></span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="st">    // The parameters are offset by C (i.e., parameters C+1 through 2*C).</span></span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="st">    if (SC[n] &gt;= 0) {</span></span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a><span class="st">      SC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.2 Compile Stan Model ---</span></span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>stan_file_rate <span class="op">=</span> <span class="st">"rate_model.stan"</span></span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_rate, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    f.write(rate_model_code)</span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Compiling Model 2: Response Rates (Negative Binomial) ---"</span>)</span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>rate_model_compiled <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_rate)</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.3 Prepare Data for Stan ---</span></span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="co"># The 'Social' column has NaN for Condition 5. Stan's integer type cannot handle</span></span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="co"># NaN, so we fill these with -1. The Stan model uses an `if` statement to</span></span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="co"># skip these observations during likelihood calculation.</span></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>stan_data_rate <span class="op">=</span> {</span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(analysis_df),</span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: analysis_df[<span class="st">'Subject'</span>].nunique(),</span>
-<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: analysis_df[<span class="st">'Subject'</span>],</span>
-<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: analysis_df[<span class="st">'Condition'</span>].nunique(),</span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: analysis_df[<span class="st">'Condition'</span>],</span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FC"</span>: analysis_df[<span class="st">'Food'</span>],</span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SC"</span>: analysis_df[<span class="st">'Social'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>) <span class="co"># Fill NaN and convert to int</span></span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.4 Run MCMC Sampler ---</span></span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Running MCMC Sampler for Model 2... ---"</span>)</span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>rate_model_fit <span class="op">=</span> rate_model_compiled.sample(</span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_rate,</span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>    chains<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>    parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>,</span>
-<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
-<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.95</span>,</span>
-<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>    max_treedepth<span class="op">=</span><span class="dv">15</span>,</span>
-<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>    show_progress<span class="op">=</span><span class="va">False</span></span>
-<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 2 sampling complete."</span>)</span>
-<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.5 Summarize Results ---</span></span>
-<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a><span class="co"># Display a summary for the population-level parameters (gamma).</span></span>
-<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[1]..[7] are log-rates for Food choices; gamma[8]..[14] are for Social choices.</span></span>
-<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">--- Summary of Population-Level Parameters (gamma: Log-Rates of Response) ---"</span>)</span>
-<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>summary_rate <span class="op">=</span> rate_model_fit.summary()</span>
-<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the summary DataFrame to show only the gamma parameters</span></span>
-<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>gamma_summary_rate <span class="op">=</span> summary_rate[summary_rate.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
-<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="02f1f759" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.1 Stan Model Definition (Negative Binomial Regression) ---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This model estimates the rate of Food and Social choices, accounting for</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># overdispersion in the count data. It's more complex because it models two</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># outcomes simultaneously.</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>rate_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;                // Number of observations</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; S;                // Number of subjects</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; subID;   // Subject ID for each observation</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; C;                // Number of conditions</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; condID;  // Condition ID for each observation</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; FC;      // Food choices (counts)</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int SC;               // Social choices (counts), allows non-positive for NA handling</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="st">  // Parameters are now size 2*C to model both Food and Social responses</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[2*C, S] z;                 // Standardized subject deviations</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="st">  cholesky_factor_corr[2*C] L_Omega;// Cholesky factor of the correlation matrix</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="st">  vector&lt;lower=0&gt;[2*C] tau;         // Scale parameters for varying effects</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="st">  row_vector[2*C] gamma;            // Population-level log-rates</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; overdisp;           // Overdispersion parameter for the negative binomial</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // Calculate subject-specific log-rates (beta) for each response type and condition</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[S, 2*C] beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Priors ---</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(z) ~ std_normal();</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="st">  L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="st">  tau ~ exponential(1.5);</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(gamma) ~ normal(1, 1.5); // Prior centered at log(2.7) choices</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="st">  overdisp ~ exponential(1);</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Likelihood ---</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="st">    // Food choices are modeled for all conditions (parameters 1 through C)</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="st">    FC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="st">    // Social choices are only modeled if they are not NA (passed as -1).</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="st">    // The parameters are offset by C (i.e., parameters C+1 through 2*C).</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="st">    if (SC[n] &gt;= 0) {</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="st">      SC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.2 Compile Stan Model ---</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>stan_file_rate <span class="op">=</span> <span class="st">"rate_model.stan"</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_rate, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>    f.write(rate_model_code)</span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Compiling Model 2: Response Rates (Negative Binomial) ---"</span>)</span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>rate_model_compiled <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_rate)</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.3 Prepare Data for Stan ---</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co"># The 'Social' column has NaN for Condition 5. Stan's integer type cannot handle</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co"># NaN, so we fill these with -1. The Stan model uses an `if` statement to</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co"># skip these observations during likelihood calculation.</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>stan_data_rate <span class="op">=</span> {</span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(analysis_df),</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: analysis_df[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: analysis_df[<span class="st">'Subject'</span>],</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: analysis_df[<span class="st">'Condition'</span>].nunique(),</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: analysis_df[<span class="st">'Condition'</span>],</span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FC"</span>: analysis_df[<span class="st">'Food'</span>],</span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SC"</span>: analysis_df[<span class="st">'Social'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>) <span class="co"># Fill NaN and convert to int</span></span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.4 Run MCMC Sampler ---</span></span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Running MCMC Sampler for Model 2... ---"</span>)</span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>rate_model_fit <span class="op">=</span> rate_model_compiled.sample(</span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_rate,</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>    chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>    parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>    iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>    max_treedepth<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    show_progress<span class="op">=</span><span class="va">False</span></span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 2 sampling complete."</span>)</span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.5 Summarize Results ---</span></span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="co"># Display a summary for the population-level parameters (gamma).</span></span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[1]..[7] are log-rates for Food choices; gamma[8]..[14] are for Social choices.</span></span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">--- Summary of Population-Level Parameters (gamma: Log-Rates of Response) ---"</span>)</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>summary_rate <span class="op">=</span> rate_model_fit.summary()</span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the summary DataFrame to show only the gamma parameters</span></span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>gamma_summary_rate <span class="op">=</span> summary_rate[summary_rate.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:35:42 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>--- Compiling Model 2: Response Rates (Negative Binomial) ---
---- Running MCMC Sampler for Model 2... ---
-Model 2 sampling complete.
+<pre><code>--- Compiling Model 2: Response Rates (Negative Binomial) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:35:53 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- Running MCMC Sampler for Model 2... ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:35:54 - cmdstanpy - INFO - CmdStan start processing
+13:35:54 - cmdstanpy - INFO - Chain [1] start processing
+13:35:54 - cmdstanpy - INFO - Chain [2] start processing
+13:35:54 - cmdstanpy - INFO - Chain [3] start processing
+13:35:54 - cmdstanpy - INFO - Chain [4] start processing
+13:36:30 - cmdstanpy - INFO - Chain [2] done processing
+13:36:30 - cmdstanpy - INFO - Chain [1] done processing
+13:36:30 - cmdstanpy - INFO - Chain [3] done processing
+13:36:31 - cmdstanpy - INFO - Chain [4] done processing
+13:36:31 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[7] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Consider re-running with show_console=True if the above output is unclear!
+13:36:31 - cmdstanpy - WARNING - Some chains may have failed to converge.
+    Chain 3 had 1 divergent transitions (0.1%)
+    Use the "diagnose()" method on the CmdStanMCMC object to see further information.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 2 sampling complete.
 
 --- Summary of Population-Level Parameters (gamma: Log-Rates of Response) ---</code></pre>
 </div>
@@ -551,199 +639,573 @@ Model 2 sampling complete.
 <tbody>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[1]</td>
-<td>4.583</td>
-<td>0.018</td>
-<td>0.552</td>
-<td>0.307</td>
-<td>3.535</td>
-<td>4.710</td>
-<td>5.156</td>
-<td>1480.640</td>
-<td>1133.550</td>
-<td>26.139</td>
+<td>4.598</td>
+<td>0.014</td>
+<td>0.528</td>
+<td>0.296</td>
+<td>3.624</td>
+<td>4.714</td>
+<td>5.148</td>
+<td>2333.980</td>
+<td>1694.290</td>
+<td>34.206</td>
 <td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[2]</td>
-<td>4.212</td>
-<td>0.012</td>
-<td>0.469</td>
-<td>0.289</td>
-<td>3.349</td>
-<td>4.312</td>
-<td>4.733</td>
-<td>2146.920</td>
-<td>2040.490</td>
-<td>37.901</td>
-<td>1.000</td>
+<td>4.210</td>
+<td>0.013</td>
+<td>0.485</td>
+<td>0.286</td>
+<td>3.361</td>
+<td>4.310</td>
+<td>4.735</td>
+<td>2297.760</td>
+<td>1543.390</td>
+<td>33.675</td>
+<td>1.002</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[3]</td>
-<td>3.257</td>
-<td>0.015</td>
-<td>0.311</td>
-<td>0.165</td>
-<td>2.790</td>
-<td>3.303</td>
-<td>3.593</td>
-<td>1818.660</td>
-<td>1096.130</td>
-<td>32.106</td>
-<td>1.003</td>
+<td>3.274</td>
+<td>0.006</td>
+<td>0.260</td>
+<td>0.156</td>
+<td>2.836</td>
+<td>3.308</td>
+<td>3.592</td>
+<td>3135.140</td>
+<td>2428.310</td>
+<td>45.947</td>
+<td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[4]</td>
-<td>2.466</td>
-<td>0.008</td>
-<td>0.363</td>
-<td>0.268</td>
-<td>1.842</td>
-<td>2.498</td>
-<td>2.968</td>
-<td>2630.350</td>
-<td>1849.660</td>
-<td>46.435</td>
-<td>1.001</td>
+<td>2.468</td>
+<td>0.007</td>
+<td>0.361</td>
+<td>0.263</td>
+<td>1.855</td>
+<td>2.497</td>
+<td>2.975</td>
+<td>3544.410</td>
+<td>2596.380</td>
+<td>51.945</td>
+<td>1.000</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[5]</td>
-<td>2.796</td>
-<td>0.005</td>
-<td>0.214</td>
-<td>0.144</td>
-<td>2.455</td>
-<td>2.817</td>
-<td>3.071</td>
-<td>3170.610</td>
-<td>1619.550</td>
-<td>55.972</td>
+<td>2.814</td>
+<td>0.004</td>
+<td>0.201</td>
+<td>0.139</td>
+<td>2.516</td>
+<td>2.825</td>
+<td>3.080</td>
+<td>3872.160</td>
+<td>2507.140</td>
+<td>56.748</td>
 <td>1.000</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[6]</td>
-<td>2.432</td>
-<td>0.006</td>
-<td>0.239</td>
+<td>2.443</td>
+<td>0.004</td>
+<td>0.228</td>
 <td>0.154</td>
-<td>2.055</td>
-<td>2.458</td>
-<td>2.730</td>
-<td>3093.850</td>
-<td>1638.660</td>
-<td>54.617</td>
-<td>1.002</td>
+<td>2.059</td>
+<td>2.461</td>
+<td>2.740</td>
+<td>4109.010</td>
+<td>2467.520</td>
+<td>60.219</td>
+<td>1.000</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[7]</td>
-<td>2.587</td>
-<td>0.004</td>
-<td>0.188</td>
-<td>0.137</td>
-<td>2.294</td>
-<td>2.593</td>
-<td>2.852</td>
-<td>3713.160</td>
-<td>3190.540</td>
-<td>65.550</td>
+<td>2.581</td>
+<td>0.003</td>
+<td>0.185</td>
+<td>0.132</td>
+<td>2.286</td>
+<td>2.590</td>
+<td>2.828</td>
+<td>4449.990</td>
+<td>3126.700</td>
+<td>65.217</td>
 <td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[8]</td>
-<td>2.078</td>
-<td>0.008</td>
-<td>0.410</td>
-<td>0.313</td>
-<td>1.358</td>
-<td>2.122</td>
-<td>2.642</td>
-<td>3180.390</td>
-<td>2597.310</td>
-<td>56.145</td>
-<td>1.002</td>
+<td>2.093</td>
+<td>0.007</td>
+<td>0.394</td>
+<td>0.306</td>
+<td>1.403</td>
+<td>2.129</td>
+<td>2.651</td>
+<td>3892.350</td>
+<td>3522.560</td>
+<td>57.044</td>
+<td>1.001</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[9]</td>
-<td>2.125</td>
+<td>2.100</td>
 <td>0.009</td>
-<td>0.535</td>
-<td>0.468</td>
-<td>1.181</td>
-<td>2.169</td>
-<td>2.902</td>
-<td>3486.490</td>
-<td>3553.490</td>
-<td>61.549</td>
-<td>1.000</td>
+<td>0.533</td>
+<td>0.450</td>
+<td>1.144</td>
+<td>2.154</td>
+<td>2.888</td>
+<td>3730.410</td>
+<td>3877.670</td>
+<td>54.671</td>
+<td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[10]</td>
-<td>2.409</td>
-<td>0.012</td>
-<td>0.484</td>
-<td>0.366</td>
-<td>1.550</td>
-<td>2.467</td>
-<td>3.063</td>
-<td>2355.620</td>
-<td>1441.750</td>
-<td>41.585</td>
-<td>1.001</td>
+<td>2.407</td>
+<td>0.008</td>
+<td>0.466</td>
+<td>0.372</td>
+<td>1.592</td>
+<td>2.460</td>
+<td>3.066</td>
+<td>4127.710</td>
+<td>3073.820</td>
+<td>60.493</td>
+<td>1.000</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[11]</td>
-<td>2.411</td>
-<td>0.009</td>
-<td>0.496</td>
-<td>0.400</td>
-<td>1.555</td>
-<td>2.463</td>
-<td>3.098</td>
-<td>3223.100</td>
-<td>2936.280</td>
-<td>56.899</td>
-<td>1.000</td>
+<td>2.416</td>
+<td>0.008</td>
+<td>0.482</td>
+<td>0.388</td>
+<td>1.578</td>
+<td>2.456</td>
+<td>3.092</td>
+<td>3741.850</td>
+<td>3755.580</td>
+<td>54.839</td>
+<td>1.001</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[12]</td>
-<td>1.006</td>
-<td>0.013</td>
-<td>1.493</td>
-<td>1.467</td>
-<td>-1.431</td>
-<td>1.017</td>
-<td>3.503</td>
-<td>13938.100</td>
-<td>4540.690</td>
-<td>246.057</td>
+<td>0.993</td>
+<td>0.012</td>
+<td>1.502</td>
+<td>1.480</td>
+<td>-1.479</td>
+<td>0.992</td>
+<td>3.450</td>
+<td>15718.400</td>
+<td>4524.630</td>
+<td>230.360</td>
+<td>1.000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[13]</td>
+<td>2.306</td>
+<td>0.006</td>
+<td>0.306</td>
+<td>0.201</td>
+<td>1.795</td>
+<td>2.337</td>
+<td>2.703</td>
+<td>3737.700</td>
+<td>2881.720</td>
+<td>54.778</td>
+<td>1.000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[14]</td>
+<td>2.105</td>
+<td>0.008</td>
+<td>0.504</td>
+<td>0.416</td>
+<td>1.238</td>
+<td>2.154</td>
+<td>2.832</td>
+<td>4358.900</td>
+<td>3385.530</td>
+<td>63.882</td>
 <td>1.001</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="b45474f1" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.1 Stan Model Definition (Negative Binomial Regression) ---</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This model estimates the rate of Food and Social choices, accounting for</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># overdispersion in the count data. It's more complex because it models two</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># outcomes simultaneously.</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>rate_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;                // Number of observations</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; S;                // Number of subjects</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; subID;   // Subject ID for each observation</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; C;                // Number of conditions</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; condID;  // Condition ID for each observation</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; FC;      // Food choices (counts)</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int SC;               // Social choices (counts), allows non-positive for NA handling</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="st">  // Parameters are now size 2*C to model both Food and Social responses</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[2*C, S] z;                 // Standardized subject deviations</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="st">  cholesky_factor_corr[2*C] L_Omega;// Cholesky factor of the correlation matrix</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="st">  vector&lt;lower=0&gt;[2*C] tau;         // Scale parameters for varying effects</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="st">  row_vector[2*C] gamma;            // Population-level log-rates</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; overdisp;           // Overdispersion parameter for the negative binomial</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // Calculate subject-specific log-rates (beta) for each response type and condition</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[S, 2*C] beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Priors ---</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(z) ~ std_normal();</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="st">  L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a><span class="st">  tau ~ exponential(1.5);</span></span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(gamma) ~ normal(1, 1.5); // Prior centered at log(2.7) choices</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="st">  overdisp ~ exponential(1);</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a><span class="st">  // --- Likelihood ---</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="st">    // Food choices are modeled for all conditions (parameters 1 through C)</span></span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a><span class="st">    FC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a><span class="st">    // Social choices are only modeled if they are not NA (passed as -1).</span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a><span class="st">    // The parameters are offset by C (i.e., parameters C+1 through 2*C).</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a><span class="st">    if (SC[n] &gt;= 0) {</span></span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a><span class="st">      SC[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.2 Compile Stan Model ---</span></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>stan_file_rate <span class="op">=</span> <span class="st">"rate_model.stan"</span></span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_rate, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>    f.write(rate_model_code)</span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Compiling Model 2: Response Rates (Negative Binomial) ---"</span>)</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>rate_model_compiled <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_rate)</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.3 Prepare Data for Stan ---</span></span>
+<span id="cb17-62"><a href="#cb17-62" aria-hidden="true" tabindex="-1"></a><span class="co"># The 'Social' column has NaN for Condition 5. Stan's integer type cannot handle</span></span>
+<span id="cb17-63"><a href="#cb17-63" aria-hidden="true" tabindex="-1"></a><span class="co"># NaN, so we fill these with -1. The Stan model uses an `if` statement to</span></span>
+<span id="cb17-64"><a href="#cb17-64" aria-hidden="true" tabindex="-1"></a><span class="co"># skip these observations during likelihood calculation.</span></span>
+<span id="cb17-65"><a href="#cb17-65" aria-hidden="true" tabindex="-1"></a>stan_data_rate <span class="op">=</span> {</span>
+<span id="cb17-66"><a href="#cb17-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(analysis_df),</span>
+<span id="cb17-67"><a href="#cb17-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: analysis_df[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb17-68"><a href="#cb17-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: analysis_df[<span class="st">'Subject'</span>],</span>
+<span id="cb17-69"><a href="#cb17-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: analysis_df[<span class="st">'Condition'</span>].nunique(),</span>
+<span id="cb17-70"><a href="#cb17-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: analysis_df[<span class="st">'Condition'</span>],</span>
+<span id="cb17-71"><a href="#cb17-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">"FC"</span>: analysis_df[<span class="st">'Food'</span>],</span>
+<span id="cb17-72"><a href="#cb17-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SC"</span>: analysis_df[<span class="st">'Social'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>) <span class="co"># Fill NaN and convert to int</span></span>
+<span id="cb17-73"><a href="#cb17-73" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-74"><a href="#cb17-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-75"><a href="#cb17-75" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.4 Run MCMC Sampler ---</span></span>
+<span id="cb17-76"><a href="#cb17-76" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Running MCMC Sampler for Model 2... ---"</span>)</span>
+<span id="cb17-77"><a href="#cb17-77" aria-hidden="true" tabindex="-1"></a>rate_model_fit <span class="op">=</span> rate_model_compiled.sample(</span>
+<span id="cb17-78"><a href="#cb17-78" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_rate,</span>
+<span id="cb17-79"><a href="#cb17-79" aria-hidden="true" tabindex="-1"></a>    chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb17-80"><a href="#cb17-80" aria-hidden="true" tabindex="-1"></a>    parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb17-81"><a href="#cb17-81" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb17-82"><a href="#cb17-82" aria-hidden="true" tabindex="-1"></a>    iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb17-83"><a href="#cb17-83" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span id="cb17-84"><a href="#cb17-84" aria-hidden="true" tabindex="-1"></a>    max_treedepth<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb17-85"><a href="#cb17-85" aria-hidden="true" tabindex="-1"></a>    show_progress<span class="op">=</span><span class="va">False</span></span>
+<span id="cb17-86"><a href="#cb17-86" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-87"><a href="#cb17-87" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 2 sampling complete."</span>)</span>
+<span id="cb17-88"><a href="#cb17-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-89"><a href="#cb17-89" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 3.5 Summarize Results ---</span></span>
+<span id="cb17-90"><a href="#cb17-90" aria-hidden="true" tabindex="-1"></a><span class="co"># Display a summary for the population-level parameters (gamma).</span></span>
+<span id="cb17-91"><a href="#cb17-91" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[1]..[7] are log-rates for Food choices; gamma[8]..[14] are for Social choices.</span></span>
+<span id="cb17-92"><a href="#cb17-92" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">--- Summary of Population-Level Parameters (gamma: Log-Rates of Response) ---"</span>)</span>
+<span id="cb17-93"><a href="#cb17-93" aria-hidden="true" tabindex="-1"></a>summary_rate <span class="op">=</span> rate_model_fit.summary()</span>
+<span id="cb17-94"><a href="#cb17-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the summary DataFrame to show only the gamma parameters</span></span>
+<span id="cb17-95"><a href="#cb17-95" aria-hidden="true" tabindex="-1"></a>gamma_summary_rate <span class="op">=</span> summary_rate[summary_rate.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
+<span id="cb17-96"><a href="#cb17-96" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:37:13 - cmdstanpy - INFO - compiling stan file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model.stan to exe file /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- Compiling Model 2: Response Rates (Negative Binomial) ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:37:27 - cmdstanpy - INFO - compiled model executable: /Users/Matt/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Research/2017/RatSharing/analysis/rate_model</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- Running MCMC Sampler for Model 2... ---</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>13:37:28 - cmdstanpy - INFO - CmdStan start processing
+13:37:28 - cmdstanpy - INFO - Chain [1] start processing
+13:37:28 - cmdstanpy - INFO - Chain [2] start processing
+13:37:28 - cmdstanpy - INFO - Chain [3] start processing
+13:37:28 - cmdstanpy - INFO - Chain [4] start processing
+13:38:33 - cmdstanpy - INFO - Chain [4] done processing
+13:38:34 - cmdstanpy - INFO - Chain [1] done processing
+13:38:37 - cmdstanpy - INFO - Chain [2] done processing
+13:38:38 - cmdstanpy - INFO - Chain [3] done processing
+13:38:38 - cmdstanpy - WARNING - Non-fatal error during sampling:
+Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[7] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[5] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+    Exception: lkj_corr_cholesky_lpdf: Random variable[3] is 0, but must be positive! (in 'rate_model.stan', line 29, column 2 to column 33)
+Consider re-running with show_console=True if the above output is unclear!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model 2 sampling complete.
+
+--- Summary of Population-Level Parameters (gamma: Log-Rates of Response) ---</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Mean</th>
+<th data-quarto-table-cell-role="th">MCSE</th>
+<th data-quarto-table-cell-role="th">StdDev</th>
+<th data-quarto-table-cell-role="th">MAD</th>
+<th data-quarto-table-cell-role="th">5%</th>
+<th data-quarto-table-cell-role="th">50%</th>
+<th data-quarto-table-cell-role="th">95%</th>
+<th data-quarto-table-cell-role="th">ESS_bulk</th>
+<th data-quarto-table-cell-role="th">ESS_tail</th>
+<th data-quarto-table-cell-role="th">ESS_bulk/s</th>
+<th data-quarto-table-cell-role="th">R_hat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[1]</td>
+<td>4.626</td>
+<td>0.012</td>
+<td>0.482</td>
+<td>0.276</td>
+<td>3.758</td>
+<td>4.729</td>
+<td>5.142</td>
+<td>2396.060</td>
+<td>2016.040</td>
+<td>18.683</td>
+<td>1.001</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[2]</td>
+<td>4.238</td>
+<td>0.009</td>
+<td>0.427</td>
+<td>0.278</td>
+<td>3.448</td>
+<td>4.319</td>
+<td>4.742</td>
+<td>2800.200</td>
+<td>2406.590</td>
+<td>21.834</td>
+<td>1.001</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[3]</td>
+<td>3.272</td>
+<td>0.005</td>
+<td>0.269</td>
+<td>0.166</td>
+<td>2.830</td>
+<td>3.304</td>
+<td>3.608</td>
+<td>3357.610</td>
+<td>2707.600</td>
+<td>26.180</td>
+<td>1.001</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[4]</td>
+<td>2.479</td>
+<td>0.006</td>
+<td>0.339</td>
+<td>0.256</td>
+<td>1.915</td>
+<td>2.505</td>
+<td>2.943</td>
+<td>3963.530</td>
+<td>2912.300</td>
+<td>30.904</td>
+<td>1.000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[5]</td>
+<td>2.807</td>
+<td>0.006</td>
+<td>0.216</td>
+<td>0.142</td>
+<td>2.482</td>
+<td>2.825</td>
+<td>3.086</td>
+<td>2825.580</td>
+<td>1805.620</td>
+<td>22.032</td>
+<td>1.003</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[6]</td>
+<td>2.444</td>
+<td>0.004</td>
+<td>0.223</td>
+<td>0.153</td>
+<td>2.089</td>
+<td>2.462</td>
+<td>2.740</td>
+<td>3707.040</td>
+<td>2408.460</td>
+<td>28.905</td>
+<td>1.001</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[7]</td>
+<td>2.585</td>
+<td>0.003</td>
+<td>0.195</td>
+<td>0.134</td>
+<td>2.293</td>
+<td>2.596</td>
+<td>2.843</td>
+<td>4409.750</td>
+<td>2853.950</td>
+<td>34.384</td>
+<td>1.000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[8]</td>
+<td>2.090</td>
+<td>0.006</td>
+<td>0.391</td>
+<td>0.303</td>
+<td>1.418</td>
+<td>2.129</td>
+<td>2.653</td>
+<td>4018.770</td>
+<td>3744.080</td>
+<td>31.335</td>
+<td>1.001</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[9]</td>
+<td>2.113</td>
+<td>0.009</td>
+<td>0.546</td>
+<td>0.455</td>
+<td>1.141</td>
+<td>2.164</td>
+<td>2.894</td>
+<td>4017.800</td>
+<td>3230.800</td>
+<td>31.328</td>
+<td>1.001</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[10]</td>
+<td>2.416</td>
+<td>0.008</td>
+<td>0.467</td>
+<td>0.373</td>
+<td>1.584</td>
+<td>2.466</td>
+<td>3.086</td>
+<td>4045.290</td>
+<td>3369.080</td>
+<td>31.542</td>
+<td>1.000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">gamma[11]</td>
+<td>2.412</td>
+<td>0.009</td>
+<td>0.484</td>
+<td>0.382</td>
+<td>1.560</td>
+<td>2.459</td>
+<td>3.100</td>
+<td>3735.590</td>
+<td>2765.630</td>
+<td>29.127</td>
+<td>1.001</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">gamma[12]</td>
+<td>1.035</td>
+<td>0.012</td>
+<td>1.500</td>
+<td>1.517</td>
+<td>-1.416</td>
+<td>1.038</td>
+<td>3.499</td>
+<td>14799.700</td>
+<td>4217.130</td>
+<td>115.396</td>
+<td>1.003</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">gamma[13]</td>
 <td>2.317</td>
-<td>0.005</td>
-<td>0.288</td>
-<td>0.204</td>
-<td>1.825</td>
-<td>2.341</td>
-<td>2.715</td>
-<td>3620.810</td>
-<td>3470.720</td>
-<td>63.920</td>
-<td>1.001</td>
+<td>0.006</td>
+<td>0.296</td>
+<td>0.205</td>
+<td>1.843</td>
+<td>2.337</td>
+<td>2.708</td>
+<td>3343.050</td>
+<td>2842.620</td>
+<td>26.067</td>
+<td>1.000</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">gamma[14]</td>
-<td>2.111</td>
-<td>0.010</td>
-<td>0.509</td>
-<td>0.421</td>
-<td>1.228</td>
+<td>2.117</td>
+<td>0.009</td>
+<td>0.504</td>
+<td>0.414</td>
+<td>1.283</td>
 <td>2.152</td>
-<td>2.853</td>
-<td>3161.170</td>
-<td>2626.990</td>
-<td>55.806</td>
-<td>1.001</td>
+<td>2.857</td>
+<td>3863.000</td>
+<td>3626.800</td>
+<td>30.121</td>
+<td>1.000</td>
 </tr>
 </tbody>
 </table>
@@ -762,101 +1224,101 @@ Model 2 sampling complete.
 <h3 class="anchored" data-anchor-id="stan-model-code-and-execution-2">Stan Model Code and Execution</h3>
 <p>The structure of this model is similar to Model 2, but it is expanded to handle three potential outcomes. The summary table for <code>gamma</code> will show the population-level log-rates for consumed pellets (<code>gamma[1]</code> to <code>gamma[7]</code>), left-behind pellets (<code>gamma[8]</code> to <code>gamma[14]</code>), and shared pellets (<code>gamma[15]</code> to <code>gamma[21]</code>).</p>
 <div id="518ed95d" class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.1 Stan Model Definition (Negative Binomial for Pellet Counts) ---</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This Stan code models the counts of consumed, shared, and left-behind pellets.</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>pellet_model_code <span class="op">=</span> <span class="st">"""</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; S;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; subID;</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; C;</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; condID;</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; CP;      // Consumed Pellets (counts)</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int LP;               // Left-behind Pellets (counts), allows -1 for NA</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int SP;               // Shared Pellets (counts), allows -1 for NA</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">  // Parameters for the hierarchical structure (3*C for Consumed, Left, and Shared)</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[3*C, S] z;</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="st">  cholesky_factor_corr[3*C] L_Omega;</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="st">  vector&lt;lower=0&gt;[3*C] tau;</span></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="st">  row_vector[3*C] gamma;</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; overdisp;</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // Calculate subject-specific log-rates (beta) for each outcome type and condition</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[S, 3*C] beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="st">  // Priors</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(z) ~ std_normal();</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="st">  L_Omega ~ lkj_corr_cholesky(2);</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="st">  tau ~ exponential(1.5);</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(gamma) ~ normal(0, 1.5); // Prior centered at log(1) = 0 pellets</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="st">  overdisp ~ exponential(1);</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="st">  // Likelihood</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="st">    CP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="st">    if (LP[n] &gt;= 0) {</span></span>
-<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="st">      LP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
-<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="st">    if (SP[n] &gt;= 0) {</span></span>
-<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="st">      SP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + (2*C)], overdisp);</span></span>
-<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
-<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
-<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
-<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
-<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.2 Compile Stan Model ---</span></span>
-<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>stan_file_pellet <span class="op">=</span> <span class="st">"pellet_model.stan"</span></span>
-<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_pellet, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
-<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    f.write(pellet_model_code)</span>
-<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Compiling Model 3: Pellet Allocation (Negative Binomial) ---"</span>)</span>
-<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>pellet_model_compiled <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_pellet)</span>
-<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.3 Prepare Data for Stan ---</span></span>
-<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Stan's integer type does not support NaNs. We replace them with -1 and use</span></span>
-<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="co"># `if` statements in the Stan model to skip those observations.</span></span>
-<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>stan_data_pellet <span class="op">=</span> {</span>
-<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(analysis_df),</span>
-<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: analysis_df[<span class="st">'Subject'</span>].nunique(),</span>
-<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: analysis_df[<span class="st">'Subject'</span>],</span>
-<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: analysis_df[<span class="st">'Condition'</span>].nunique(),</span>
-<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: analysis_df[<span class="st">'Condition'</span>],</span>
-<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"CP"</span>: analysis_df[<span class="st">'Food'</span>],  </span>
-<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LP"</span>: analysis_df[<span class="st">'PelletsLeft'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>),</span>
-<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SP"</span>: analysis_df[<span class="st">'Sharing'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.4 Run MCMC Sampler ---</span></span>
-<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Running MCMC Sampler for Model 3... ---"</span>)</span>
-<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>pellet_model_fit <span class="op">=</span> pellet_model_compiled.sample(</span>
-<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_pellet,</span>
-<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>    chains<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>    parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>,</span>
-<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>    iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
-<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.95</span>,</span>
-<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>    max_treedepth<span class="op">=</span><span class="dv">15</span>,</span>
-<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>    show_progress<span class="op">=</span><span class="va">False</span></span>
-<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 3 sampling complete."</span>)</span>
-<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.5 Summarize Results ---</span></span>
-<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Display a summary table for the population-level parameters (gamma).</span></span>
-<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[1-7]:   Log-rates for Consumed pellets ('Food' column)</span></span>
-<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[8-14]:  Log-rates for Left-Behind pellets ('PelletsLeft' column)</span></span>
-<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[15-21]: Log-rates for Shared pellets ('Sharing' column)</span></span>
-<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">--- Summary of Population-Level Parameters (gamma: Log-Rates of Pellet Allocation) ---"</span>)</span>
-<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>summary_pellet <span class="op">=</span> pellet_model_fit.summary()</span>
-<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>gamma_summary_pellet <span class="op">=</span> summary_pellet[summary_pellet.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
-<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_pellet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.1 Stan Model Definition (Negative Binomial for Pellet Counts) ---</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This Stan code models the counts of consumed, shared, and left-behind pellets.</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>pellet_model_code <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; S;</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; subID;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; C;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=1&gt; condID;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; CP;      // Consumed Pellets (counts)</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int LP;               // Left-behind Pellets (counts), allows -1 for NA</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int SP;               // Shared Pellets (counts), allows -1 for NA</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="st">  // Parameters for the hierarchical structure (3*C for Consumed, Left, and Shared)</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[3*C, S] z;</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a><span class="st">  cholesky_factor_corr[3*C] L_Omega;</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="st">  vector&lt;lower=0&gt;[3*C] tau;</span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="st">  row_vector[3*C] gamma;</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; overdisp;</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a><span class="st">transformed parameters {</span></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // Calculate subject-specific log-rates (beta) for each outcome type and condition</span></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[S, 3*C] beta = rep_matrix(gamma, S) + (diag_pre_multiply(tau, L_Omega) * z)';</span></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a><span class="st">  // Priors</span></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(z) ~ std_normal();</span></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a><span class="st">  L_Omega ~ lkj_corr_cholesky(2);</span></span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a><span class="st">  tau ~ exponential(1.5);</span></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a><span class="st">  to_vector(gamma) ~ normal(0, 1.5); // Prior centered at log(1) = 0 pellets</span></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a><span class="st">  overdisp ~ exponential(1);</span></span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="st">  // Likelihood</span></span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a><span class="st">    CP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n]], overdisp);</span></span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a><span class="st">    if (LP[n] &gt;= 0) {</span></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a><span class="st">      LP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + C], overdisp);</span></span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a><span class="st">    if (SP[n] &gt;= 0) {</span></span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a><span class="st">      SP[n] ~ neg_binomial_2_log(beta[subID[n], condID[n] + (2*C)], overdisp);</span></span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.2 Compile Stan Model ---</span></span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>stan_file_pellet <span class="op">=</span> <span class="st">"pellet_model.stan"</span></span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(stan_file_pellet, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>    f.write(pellet_model_code)</span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Compiling Model 3: Pellet Allocation (Negative Binomial) ---"</span>)</span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>pellet_model_compiled <span class="op">=</span> CmdStanModel(stan_file<span class="op">=</span>stan_file_pellet)</span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.3 Prepare Data for Stan ---</span></span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Stan's integer type does not support NaNs. We replace them with -1 and use</span></span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a><span class="co"># `if` statements in the Stan model to skip those observations.</span></span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a>stan_data_pellet <span class="op">=</span> {</span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a>    <span class="st">"N"</span>: <span class="bu">len</span>(analysis_df),</span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: analysis_df[<span class="st">'Subject'</span>].nunique(),</span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>    <span class="st">"subID"</span>: analysis_df[<span class="st">'Subject'</span>],</span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>: analysis_df[<span class="st">'Condition'</span>].nunique(),</span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">"condID"</span>: analysis_df[<span class="st">'Condition'</span>],</span>
+<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">"CP"</span>: analysis_df[<span class="st">'Food'</span>],  </span>
+<span id="cb24-69"><a href="#cb24-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LP"</span>: analysis_df[<span class="st">'PelletsLeft'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>),</span>
+<span id="cb24-70"><a href="#cb24-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SP"</span>: analysis_df[<span class="st">'Sharing'</span>].fillna(<span class="op">-</span><span class="dv">1</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-72"><a href="#cb24-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-73"><a href="#cb24-73" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.4 Run MCMC Sampler ---</span></span>
+<span id="cb24-74"><a href="#cb24-74" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"--- Running MCMC Sampler for Model 3... ---"</span>)</span>
+<span id="cb24-75"><a href="#cb24-75" aria-hidden="true" tabindex="-1"></a>pellet_model_fit <span class="op">=</span> pellet_model_compiled.sample(</span>
+<span id="cb24-76"><a href="#cb24-76" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>stan_data_pellet,</span>
+<span id="cb24-77"><a href="#cb24-77" aria-hidden="true" tabindex="-1"></a>    chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb24-78"><a href="#cb24-78" aria-hidden="true" tabindex="-1"></a>    parallel_chains<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb24-79"><a href="#cb24-79" aria-hidden="true" tabindex="-1"></a>    iter_warmup<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb24-80"><a href="#cb24-80" aria-hidden="true" tabindex="-1"></a>    iter_sampling<span class="op">=</span><span class="dv">1500</span>,</span>
+<span id="cb24-81"><a href="#cb24-81" aria-hidden="true" tabindex="-1"></a>    adapt_delta<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span id="cb24-82"><a href="#cb24-82" aria-hidden="true" tabindex="-1"></a>    max_treedepth<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb24-83"><a href="#cb24-83" aria-hidden="true" tabindex="-1"></a>    show_progress<span class="op">=</span><span class="va">False</span></span>
+<span id="cb24-84"><a href="#cb24-84" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-85"><a href="#cb24-85" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Model 3 sampling complete."</span>)</span>
+<span id="cb24-86"><a href="#cb24-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-87"><a href="#cb24-87" aria-hidden="true" tabindex="-1"></a><span class="co"># --- 4.5 Summarize Results ---</span></span>
+<span id="cb24-88"><a href="#cb24-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Display a summary table for the population-level parameters (gamma).</span></span>
+<span id="cb24-89"><a href="#cb24-89" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[1-7]:   Log-rates for Consumed pellets ('Food' column)</span></span>
+<span id="cb24-90"><a href="#cb24-90" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[8-14]:  Log-rates for Left-Behind pellets ('PelletsLeft' column)</span></span>
+<span id="cb24-91"><a href="#cb24-91" aria-hidden="true" tabindex="-1"></a><span class="co"># gamma[15-21]: Log-rates for Shared pellets ('Sharing' column)</span></span>
+<span id="cb24-92"><a href="#cb24-92" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">--- Summary of Population-Level Parameters (gamma: Log-Rates of Pellet Allocation) ---"</span>)</span>
+<span id="cb24-93"><a href="#cb24-93" aria-hidden="true" tabindex="-1"></a>summary_pellet <span class="op">=</span> pellet_model_fit.summary()</span>
+<span id="cb24-94"><a href="#cb24-94" aria-hidden="true" tabindex="-1"></a>gamma_summary_pellet <span class="op">=</span> summary_pellet[summary_pellet.index.<span class="bu">str</span>.startswith(<span class="st">"gamma"</span>)]</span>
+<span id="cb24-95"><a href="#cb24-95" aria-hidden="true" tabindex="-1"></a>display(gamma_summary_pellet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>--- Compiling Model 3: Pellet Allocation (Negative Binomial) ---
 --- Running MCMC Sampler for Model 3... ---
