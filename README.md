@@ -14,13 +14,14 @@ The raw data for this study is available in the Supplementary Material of the or
 
 This repository is organized into the following components:
 
--   **`/figures`**: This directory contains the analysis scripts written in **R** using a Quarto document format (`analysis.qmd`) and in **Python** Jupyter Notebook that serves as a direct counterpart to the R analysis. It contains the complete workflow for running the three hierarchical Bayesian models in Stan via the `cmdstanr` interface.
-
--   **`/figures`**: This directory contains the figures generated for the manuscript.
-
--   **`/presentation`**: This directory contains a conference poster that summarizes the research study.
-
--   **`/video`**: This directory contains videos from two representative trials during experiments.
+| File / Folder | Description |
+| :--- | :--- |
+| **`/analysis/`** | Contains the primary scripts that replicate all findings in the paper. |
+| `analysis.qmd` | A Quarto document with the complete **R** workflow. |
+| `analysis.ipynb` | A Jupyter Notebook providing a **Python** translation of the analysis. |
+| **`/figures/`** | This directory contains the figures generated for the manuscript. |
+| **`/presentation/`** | This directory contains posters and slides that were presented in the conferences. |
+| **`/video/`** | This directory contains videos from two representative trials during experiments. |
 
 ------------------------------------------------------------------------
 
@@ -41,9 +42,15 @@ To execute the analysis scripts, you will need the appropriate environment and t
 ### R Environment (`analysis.qmd`)
 
 1.  **Required Packages**: `cmdstanr` and `readr`.
-2.  **Installation**: `R     install.packages(c("cmdstanr", "readr"))     cmdstanr::install_cmdstan()`
+2.  **Installation**: 
+    ```R
+    install.packages(c("cmdstanr", "readr"))     cmdstanr::install_cmdstan()
+    ```
 
 ### Python Environment (`analysis.ipynb`)
 
 1.  **Required Packages**: `cmdstanpy` and `pandas`.
-2.  **Installation**: `bash     pip install cmdstanpy pandas` Then, run the following in Python to install the Stan backend: `python     import cmdstanpy     cmdstanpy.install_cmdstan()`
+2.  **Installation**: 
+    ```bash
+    pip install cmdstanpy pandas` 
+    ```
