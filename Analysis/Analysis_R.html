@@ -2419,69 +2419,77 @@ vertical-align: -.125em;
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p><code>Raw_data.csv</code> contains 145 session-level observations from three focal rats across seven conditions. The value <code>-1</code> denotes an outcome that was not applicable or not recorded; it is never analyzed as a behavioral count. The checks below verify the published session counts and all sentinel-value patterns used by the Stan likelihoods.</p>
+<p><code>Raw_data.csv</code> is hosted in the study’s <a href="https://osf.io/qrbzj/">OSF Electronic Supplement</a> and is not distributed through this repository. Download it to <code>Analysis/Raw_data.csv</code>, or set the <code>RATSHARING_DATA</code> environment variable to its local path. The file contains 145 session-level observations from three focal rats across seven conditions. The value <code>-1</code> denotes an outcome that was not applicable or not recorded; it is never analyzed as a behavioral count.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;Raw_data.csv&quot;</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>required_columns <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Rat&quot;</span>, <span class="st">&quot;Condition&quot;</span>, <span class="st">&quot;FoodAmmt&quot;</span>, <span class="st">&quot;Social&quot;</span>, <span class="st">&quot;Food&quot;</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Sharing&quot;</span>, <span class="st">&quot;TimesShared&quot;</span>, <span class="st">&quot;PelletsLeft&quot;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(required_columns <span class="sc">%in%</span> <span class="fu">names</span>(raw_data))) {</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;Raw_data.csv does not contain the published analysis variables.&quot;</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> raw_data</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>analysis_data<span class="sc">$</span>Subject <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">as.factor</span>(analysis_data<span class="sc">$</span>Rat))</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nrow</span>(analysis_data) <span class="sc">==</span> <span class="dv">145</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>(<span class="fu">unique</span>(analysis_data<span class="sc">$</span>Subject)) <span class="sc">==</span> <span class="dv">3</span>,</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">identical</span>(<span class="fu">as.integer</span>(<span class="fu">sort</span>(<span class="fu">unique</span>(analysis_data<span class="sc">$</span>Condition))), <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>),</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Food <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>FoodAmmt <span class="sc">&gt;</span> <span class="dv">0</span>),</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Social[analysis_data<span class="sc">$</span>Condition <span class="sc">==</span> <span class="dv">5</span>] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>),</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Social[analysis_data<span class="sc">$</span>Condition <span class="sc">!=</span> <span class="dv">5</span>] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Sharing[analysis_data<span class="sc">$</span>Condition <span class="sc">==</span> <span class="dv">5</span>] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>),</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Sharing[analysis_data<span class="sc">$</span>Condition <span class="sc">!=</span> <span class="dv">5</span>] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>PelletsLeft[analysis_data<span class="sc">$</span>Condition <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>PelletsLeft[<span class="sc">!</span>analysis_data<span class="sc">$</span>Condition <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>expected_sessions <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">13</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">6</span>,</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="dv">11</span>, <span class="dv">9</span>,  <span class="dv">9</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>,</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>     <span class="dv">5</span>, <span class="dv">4</span>,  <span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">5</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">3</span>,</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>observed_sessions <span class="ot">&lt;-</span> <span class="fu">xtabs</span>(<span class="sc">~</span> Rat <span class="sc">+</span> Condition, <span class="at">data =</span> analysis_data)</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(<span class="fu">as.integer</span>(observed_sessions) <span class="sc">==</span> <span class="fu">as.integer</span>(expected_sessions)))</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>social_for_summary <span class="ot">&lt;-</span> <span class="fu">replace</span>(</span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Social,</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Social <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA_integer_</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>DATA_FILE <span class="ot">&lt;-</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;RATSHARING_DATA&quot;</span>, <span class="at">unset =</span> <span class="st">&quot;Raw_data.csv&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(DATA_FILE)) {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="fu">paste0</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Data file not found. Download Raw_data.csv from https://osf.io/qrbzj/ &quot;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;and save it in Analysis/, or set RATSHARING_DATA to its local path.&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(DATA_FILE, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>required_columns <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Rat&quot;</span>, <span class="st">&quot;Condition&quot;</span>, <span class="st">&quot;FoodAmmt&quot;</span>, <span class="st">&quot;Social&quot;</span>, <span class="st">&quot;Food&quot;</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;Sharing&quot;</span>, <span class="st">&quot;TimesShared&quot;</span>, <span class="st">&quot;PelletsLeft&quot;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(required_columns <span class="sc">%in%</span> <span class="fu">names</span>(raw_data))) {</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;Raw_data.csv does not contain the published analysis variables.&quot;</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>analysis_data <span class="ot">&lt;-</span> raw_data</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>analysis_data<span class="sc">$</span>Subject <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">as.factor</span>(analysis_data<span class="sc">$</span>Rat))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nrow</span>(analysis_data) <span class="sc">==</span> <span class="dv">145</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>(<span class="fu">unique</span>(analysis_data<span class="sc">$</span>Subject)) <span class="sc">==</span> <span class="dv">3</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">identical</span>(<span class="fu">as.integer</span>(<span class="fu">sort</span>(<span class="fu">unique</span>(analysis_data<span class="sc">$</span>Condition))), <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>),</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Food <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>FoodAmmt <span class="sc">&gt;</span> <span class="dv">0</span>),</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Social[analysis_data<span class="sc">$</span>Condition <span class="sc">==</span> <span class="dv">5</span>] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>),</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Social[analysis_data<span class="sc">$</span>Condition <span class="sc">!=</span> <span class="dv">5</span>] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Sharing[analysis_data<span class="sc">$</span>Condition <span class="sc">==</span> <span class="dv">5</span>] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>),</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>Sharing[analysis_data<span class="sc">$</span>Condition <span class="sc">!=</span> <span class="dv">5</span>] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>PelletsLeft[analysis_data<span class="sc">$</span>Condition <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)] <span class="sc">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(analysis_data<span class="sc">$</span>PelletsLeft[<span class="sc">!</span>analysis_data<span class="sc">$</span>Condition <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)] <span class="sc">==</span> <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>expected_sessions <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    <span class="dv">11</span>, <span class="dv">9</span>, <span class="dv">13</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">6</span>,</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="dv">11</span>, <span class="dv">9</span>,  <span class="dv">9</span>, <span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>,</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>     <span class="dv">5</span>, <span class="dv">4</span>,  <span class="dv">5</span>, <span class="dv">8</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">5</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">3</span>,</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
 <span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>sharing_for_summary <span class="ot">&lt;-</span> <span class="fu">replace</span>(</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Sharing,</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Sharing <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA_integer_</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>data_profile <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">condition =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>,</span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">sessions =</span> <span class="fu">as.integer</span>(<span class="fu">table</span>(analysis_data<span class="sc">$</span>Condition)),</span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_food_choices =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(analysis_data<span class="sc">$</span>Food, analysis_data<span class="sc">$</span>Condition, mean)),</span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_social_choices =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(social_for_summary, analysis_data<span class="sc">$</span>Condition, mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_shared_pellets =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(sharing_for_summary, analysis_data<span class="sc">$</span>Condition, mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>observed_sessions <span class="ot">&lt;-</span> <span class="fu">xtabs</span>(<span class="sc">~</span> Rat <span class="sc">+</span> Condition, <span class="at">data =</span> analysis_data)</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(<span class="fu">as.integer</span>(observed_sessions) <span class="sc">==</span> <span class="fu">as.integer</span>(expected_sessions)))</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>social_for_summary <span class="ot">&lt;-</span> <span class="fu">replace</span>(</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Social,</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Social <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA_integer_</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>sharing_for_summary <span class="ot">&lt;-</span> <span class="fu">replace</span>(</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Sharing,</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  analysis_data<span class="sc">$</span>Sharing <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA_integer_</span></span>
 <span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;CmdStan:&quot;</span>, INSTALLED_CMDSTAN_VERSION, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seeds:&quot;</span>, <span class="fu">paste</span>(<span class="fu">names</span>(MODEL_SEEDS), MODEL_SEEDS, <span class="at">sep =</span> <span class="st">&quot;=&quot;</span>, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>data_profile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>data_profile <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">condition =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>,</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">sessions =</span> <span class="fu">as.integer</span>(<span class="fu">table</span>(analysis_data<span class="sc">$</span>Condition)),</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_food_choices =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(analysis_data<span class="sc">$</span>Food, analysis_data<span class="sc">$</span>Condition, mean)),</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_social_choices =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(social_for_summary, analysis_data<span class="sc">$</span>Condition, mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_shared_pellets =</span> <span class="fu">as.numeric</span>(<span class="fu">tapply</span>(sharing_for_summary, analysis_data<span class="sc">$</span>Condition, mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;CmdStan:&quot;</span>, INSTALLED_CMDSTAN_VERSION, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seeds:&quot;</span>, <span class="fu">paste</span>(<span class="fu">names</span>(MODEL_SEEDS), MODEL_SEEDS, <span class="at">sep =</span> <span class="st">&quot;=&quot;</span>, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>data_profile</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="model-1-food-versus-social-choice" class="level2">

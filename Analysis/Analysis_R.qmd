@@ -152,11 +152,19 @@ summarize_gamma <- function(fit, labels, inverse_link) {
 
 ## Data
 
-`Raw_data.csv` contains 145 session-level observations from three focal rats across seven conditions. The value `-1` denotes an outcome that was not applicable or not recorded; it is never analyzed as a behavioral count. The checks below verify the published session counts and all sentinel-value patterns used by the Stan likelihoods.
+`Raw_data.csv` is hosted in the study's [OSF Electronic Supplement](https://osf.io/qrbzj/) and is not distributed through this repository. Download it to `Analysis/Raw_data.csv`, or set the `RATSHARING_DATA` environment variable to its local path. The file contains 145 session-level observations from three focal rats across seven conditions. The value `-1` denotes an outcome that was not applicable or not recorded; it is never analyzed as a behavioral count.
 
 ```{r data_validation}
 
-raw_data <- read_csv("Raw_data.csv", show_col_types = FALSE)
+DATA_FILE <- Sys.getenv("RATSHARING_DATA", unset = "Raw_data.csv")
+if (!file.exists(DATA_FILE)) {
+  stop(paste0(
+    "Data file not found. Download Raw_data.csv from https://osf.io/qrbzj/ ",
+    "and save it in Analysis/, or set RATSHARING_DATA to its local path."
+  ))
+}
+
+raw_data <- read_csv(DATA_FILE, show_col_types = FALSE)
 required_columns <- c(
   "Rat", "Condition", "FoodAmmt", "Social", "Food",
   "Sharing", "TimesShared", "PelletsLeft"

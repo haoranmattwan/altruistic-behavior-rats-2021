@@ -12,6 +12,9 @@ env/
 renv/library/
 renv/staging/
 
+# Data are distributed through OSF, not GitHub
+Analysis/Raw_data.csv
+
 # CmdStan build products
 *.o
 *.d

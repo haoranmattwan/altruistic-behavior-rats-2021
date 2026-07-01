@@ -8,7 +8,7 @@ This repository is the research compendium for:
 
 > Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology, 12*, 696025. <https://doi.org/10.3389/fpsyg.2021.696025>
 
-It brings together the study data, Bayesian models, reproducibility workflows, figures, and representative trial videos. The version of record and its peer-reviewed supplementary materials remain available from the [journal article](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full#supplementary-material).
+It brings together the Bayesian models, reproducibility workflows, figures, and representative trial videos. The data are hosted separately in the study's [OSF project](https://osf.io/jczsv/); the version of record remains available from the [journal article](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full).
 
 ## Study at a glance
 
@@ -23,7 +23,7 @@ It brings together the study data, Bayesian models, reproducibility workflows, f
 | Resource | Description |
 | --- | --- |
 | [Published article](https://doi.org/10.3389/fpsyg.2021.696025) | Open-access version of record in *Frontiers in Psychology* |
-| [`Analysis/Raw_data.csv`](Analysis/Raw_data.csv) | Session-level analysis dataset (145 observations) |
+| [Data on OSF](https://osf.io/qrbzj/) | `Raw_data.csv`, hosted in the OSF Electronic Supplement |
 | [`CODEBOOK.md`](CODEBOOK.md) | Variables, condition definitions, and missing-value conventions |
 | [`Analysis/Analysis_R.qmd`](Analysis/Analysis_R.qmd) | Annotated R and CmdStan workflow |
 | [`Analysis/Analysis_py.ipynb`](Analysis/Analysis_py.ipynb) | Annotated Python and CmdStanPy workflow |
@@ -33,9 +33,11 @@ It brings together the study data, Bayesian models, reproducibility workflows, f
 | [`video/`](video/) | Representative food-choice and social-release trials |
 | [`CITATION.cff`](CITATION.cff) | Machine-readable citation metadata |
 
-The maintained workflows use modern CmdStan interfaces while retaining the published variables, priors, likelihoods, and sampling configuration. The repository also preserves checksummed copies of the original analysis source; the publisher's copies remain available in the journal's [supplementary materials](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full#supplementary-material).
+The maintained workflows use modern CmdStan interfaces while retaining the published variables, priors, likelihoods, and sampling configuration. The repository does not distribute the data. Download `Raw_data.csv` from the [OSF Electronic Supplement](https://osf.io/qrbzj/) before running either workflow.
 
 ## Reproduce the analyses
+
+Download [`Raw_data.csv` from OSF](https://osf.io/qrbzj/) and save it as `Analysis/Raw_data.csv`. The file is intentionally excluded from Git. Alternatively, set the `RATSHARING_DATA` environment variable to its local path.
 
 The setup commands below should be run from the repository root. Compiling the Stan models requires a working C++ toolchain. Both workflows enforce the CmdStan version recorded in `config/cmdstan-version.txt`, use fixed model-specific seeds, and report divergences, maximum-treedepth events, E-BFMI, R-hat, and effective sample sizes. Sampling uses four parallel chains and 24,000 total iterations per model (including warmup), so a complete run can be computationally intensive.
 
@@ -70,7 +72,7 @@ The final command can be run from the repository root. If the notebook is opened
 
 ```text
 .
-├── Analysis/           # Data, maintained workflows, Stan models, source archives
+├── Analysis/           # Maintained workflows, Stan models, source archives
 ├── config/             # Pinned computational-tool versions
 ├── figures/            # Figure PDFs and editable source files
 ├── presentation/       # Conference posters, slides, and abstracts
@@ -84,7 +86,7 @@ The final command can be run from the repository root. If the notebook is opened
 
 ## Research transparency
 
-- **Data availability:** The analysis data are included in this repository and in the article's supplementary materials.
+- **Data availability:** The repository does not distribute the data. `Raw_data.csv` is available from the study's [OSF Electronic Supplement](https://osf.io/qrbzj/).
 - **Ethics:** The animal study was reviewed and approved by the Reed College Institutional Care and Use Committee.
 - **Funding:** Reed College Summer Scholarship Funds supported the research.
 - **Conflicts of interest:** The authors reported no commercial or financial relationships that could be construed as a potential conflict of interest.

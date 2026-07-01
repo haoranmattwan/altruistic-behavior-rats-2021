@@ -2,7 +2,7 @@
 
 ## Dataset
 
-[`Analysis/Raw_data.csv`](Analysis/Raw_data.csv) contains 145 session-level observations from three focal rats across seven experimental conditions. Each row is one 30-minute experimental session.
+[`Raw_data.csv`](https://osf.io/qrbzj/) is hosted in the study's [OSF project](https://osf.io/jczsv/) and is not distributed through this repository. It contains 145 session-level observations from three focal rats across seven experimental conditions. Each row is one 30-minute experimental session.
 
 The comma-separated file uses integer values throughout. A value of `-1` means that a measure was not applicable or was not recorded for that session; it is not a behavioral count and should be treated as missing.
 
@@ -43,4 +43,4 @@ The dataset accompanies:
 
 > Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology, 12*, 696025. <https://doi.org/10.3389/fpsyg.2021.696025>
 
-The peer-reviewed article and archival supplementary materials are available from the [publisher](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full#supplementary-material).
+The data and archival electronic supplement are available from [OSF](https://osf.io/jczsv/). The peer-reviewed article is available from the [publisher](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full).
