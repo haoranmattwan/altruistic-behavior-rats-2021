@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use these materials, please cite the peer-reviewed article below."
+title: "Research compendium for Failure to Find Altruistic Food Sharing in Rats"
+type: dataset
+authors:
+  - family-names: Wan
+    given-names: Haoran
+  - family-names: Kirkman
+    given-names: Cyrus F.
+  - family-names: Jensen
+    given-names: Greg
+  - family-names: Hackenberg
+    given-names: Timothy D.
+repository-code: "https://github.com/haoranmattwan/altruistic-behavior-rats-2021"
+url: "https://github.com/haoranmattwan/altruistic-behavior-rats-2021"
+keywords:
+  - altruism
+  - Bayesian analysis
+  - comparative psychology
+  - food sharing
+  - open science
+  - rats
+  - social reward
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Wan
+      given-names: Haoran
+    - family-names: Kirkman
+      given-names: Cyrus F.
+    - family-names: Jensen
+      given-names: Greg
+    - family-names: Hackenberg
+      given-names: Timothy D.
+  title: "Failure to Find Altruistic Food Sharing in Rats"
+  journal: "Frontiers in Psychology"
+  volume: 12
+  start: 696025
+  year: 2021
+  date-published: 2021-06-22
+  doi: "10.3389/fpsyg.2021.696025"
+  url: "https://doi.org/10.3389/fpsyg.2021.696025"

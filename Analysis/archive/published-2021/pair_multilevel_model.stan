@@ -1,12 +1,13 @@
-
+// saved as pair_multilevel_model.stan
+//
 data{
 	int<lower=1> N;         // Number of observations
 	int<lower=1> S;         // Number of subjects
-	array[N] int<lower=1> subID;  // Subject IDs
+	int<lower=1> subID[N];  // Subject IDs
 	int<lower=1> C;         // Number of conditions
-	array[N] int<lower=1> condID; // Condition ID
-	array[N] int<lower=0> choice; // Number of choices per session
-	array[N] int<lower=0> food;   // Number of food choices (such that choose[s]-food[s]=social[s])
+	int<lower=1> condID[N]; // Condition ID
+	int<lower=0> choice[N]; // Number of choices per session
+	int<lower=0> food[N];   // Number of food choices (such that choose[s]-food[s]=social[s])
 }
 //
 transformed data {
@@ -29,7 +30,7 @@ transformed parameters{
 }
 //
 model{
-	array[N] real mu;
+	real mu[N];
 
 	to_vector(z) ~ normal(0,1);
 	L_Omega ~ lkj_corr_cholesky(2);

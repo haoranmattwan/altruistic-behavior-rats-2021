@@ -12,10 +12,30 @@ env/
 renv/library/
 renv/staging/
 
-# Stan
+# CmdStan build products
 *.o
 *.d
+Analysis/choice_model
+Analysis/intake_multilevel_model
+Analysis/pair_multilevel_model
+Analysis/pellet_model
+Analysis/rate_model
+Analysis/resp_rate_multilevel_model
+Analysis/stan_models/choice_model
 
-# OS / Editor specific
+# Generated analysis output and caches
+Analysis/Analysis_R.html
+Analysis/Analysis_py.html
+Analysis/Analysis_py_files/
+Analysis/Analysis_R_cache/
+Analysis/analysis_cache/
+README.html
+README_files/
+**/.quarto/
+**/*.quarto_ipynb
+tmp/
+
+# OS and editor files
 .DS_Store
+._*
 .vscode/

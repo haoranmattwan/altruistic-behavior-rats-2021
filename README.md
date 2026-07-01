@@ -1,56 +1,97 @@
-# Analysis and Materials for "Failure to Find Altruistic Food Sharing in Rats" (Wan et al., 2021)
+# Failure to Find Altruistic Food Sharing in Rats
 
-This repository contains the analysis scripts, figures, and supporting materials for the peer-reviewed publication:
+[![DOI](https://img.shields.io/badge/DOI-10.3389%2Ffpsyg.2021.696025-0b7285)](https://doi.org/10.3389/fpsyg.2021.696025)
+[![Open access](https://img.shields.io/badge/article-CC%20BY%204.0-2b8a3e)](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full)
+[![Code license](https://img.shields.io/badge/code-MIT-5c677d)](LICENSE)
 
-> Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology*, *12*, Article 696025. https://doi.org/10.3389/fpsyg.2021.696025
+This repository is the research compendium for:
 
-The project's primary goal was to systematically examine the conditions under which a rat might share food with a partner, testing claims of altruism in prior literature.
+> Wan, H., Kirkman, C. F., Jensen, G., & Hackenberg, T. D. (2021). Failure to find altruistic food sharing in rats. *Frontiers in Psychology, 12*, 696025. <https://doi.org/10.3389/fpsyg.2021.696025>
 
-The raw data for this study is available in the Supplementary Material of the original publication, which can be accessed at the publisher's website: <https://www.frontiersin.org/articles/10.3389/fpsyg.2021.696025/full#supplementary-material>.
+It brings together the study data, Bayesian models, reproducibility workflows, figures, and representative trial videos. The version of record and its peer-reviewed supplementary materials remain available from the [journal article](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full#supplementary-material).
 
-------------------------------------------------------------------------
+## Study at a glance
 
-## Repository Contents
+**Question.** Will rats leave high-value food available for a familiar partner when food quantity, food motivation, and access conditions are varied?
 
-This repository is organized into the following components:
+**Design.** Three focal rats made repeated choices between sucrose pellets and 30 seconds of social access to a cagemate across seven experimental conditions. The analyses use Bayesian multilevel generalized linear models to estimate food-versus-social choice, response rates, and pellet allocation.
 
-| File / Folder | Description |
-| :--- | :--- |
-| **`/analysis/`** | Contains the primary scripts that replicate all findings in the paper. |
-| `analysis.qmd` | A Quarto document with the complete **R** workflow. |
-| `analysis.ipynb` | A Jupyter Notebook providing a **Python** translation of the analysis. |
-| **`/figures/`** | This directory contains the figures generated for the manuscript. |
-| **`/presentation/`** | This directory contains posters and slides that were presented in the conferences. |
-| **`/video/`** | This directory contains videos from two representative trials during experiments. |
+**Finding.** Rats responded for both food and social access, but food sharing was rare. Sharing occurred on approximately 1% of available opportunities, including under low food-motivation conditions. These findings did not support the claim that rats were motivated to share food altruistically under the tested conditions.
 
-------------------------------------------------------------------------
+## Open materials
 
-## Methodology Snapshot
+| Resource | Description |
+| --- | --- |
+| [Published article](https://doi.org/10.3389/fpsyg.2021.696025) | Open-access version of record in *Frontiers in Psychology* |
+| [`Analysis/Raw_data.csv`](Analysis/Raw_data.csv) | Session-level analysis dataset (145 observations) |
+| [`CODEBOOK.md`](CODEBOOK.md) | Variables, condition definitions, and missing-value conventions |
+| [`Analysis/Analysis_R.qmd`](Analysis/Analysis_R.qmd) | Annotated R and CmdStan workflow |
+| [`Analysis/Analysis_py.ipynb`](Analysis/Analysis_py.ipynb) | Annotated Python and CmdStanPy workflow |
+| [`Analysis/archive/published-2021/`](Analysis/archive/published-2021/) | Checksummed, unmodified published analysis source |
+| [`config/cmdstan-version.txt`](config/cmdstan-version.txt) | Pinned CmdStan version shared by both workflows |
+| [`figures/`](figures/) | Publication figures and source files |
+| [`video/`](video/) | Representative food-choice and social-release trials |
+| [`CITATION.cff`](CITATION.cff) | Machine-readable citation metadata |
 
-The statistical analyses were conducted using multilevel generalized linear models implemented in the Stan programming language. This Bayesian approach was used to model three distinct behavioral outcomes:
+The maintained workflows use modern CmdStan interfaces while retaining the published variables, priors, likelihoods, and sampling configuration. The repository also preserves checksummed copies of the original analysis source; the publisher's copies remain available in the journal's [supplementary materials](https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.696025/full#supplementary-material).
 
-1.  **Food vs. Social Choice**: A hierarchical binomial logistic regression was used to model the proportion of choices made between food and a social partner.
-2.  **Response Rates**: A hierarchical negative binomial regression was implemented to model the absolute rates of food and social choices, accounting for overdispersion in the count data.
-3.  **Food Intake**: A second hierarchical negative binomial regression was used to model the number of pellets consumed, shared, or left behind.
+## Reproduce the analyses
 
-------------------------------------------------------------------------
+The setup commands below should be run from the repository root. Compiling the Stan models requires a working C++ toolchain. Both workflows enforce the CmdStan version recorded in `config/cmdstan-version.txt`, use fixed model-specific seeds, and report divergences, maximum-treedepth events, E-BFMI, R-hat, and effective sample sizes. Sampling uses four parallel chains and 24,000 total iterations per model (including warmup), so a complete run can be computationally intensive.
 
-## How to Run the Code
+### R
 
-To execute the analysis scripts, you will need the appropriate environment and the data file downloaded from the journal's supplementary materials.
+The R environment is recorded in [`renv.lock`](renv.lock) (R 4.4.1).
 
-### R Environment (`analysis.qmd`)
+```r
+install.packages("renv")
+renv::restore()
+cmdstan_version <- trimws(readLines("config/cmdstan-version.txt"))
+cmdstanr::install_cmdstan(version = cmdstan_version)
+```
 
-1.  **Required Packages**: `cmdstanr` and `readr`.
-2.  **Installation**: 
-    ```R
-    install.packages(c("cmdstanr", "readr"))     cmdstanr::install_cmdstan()
-    ```
+Then open `Analysis/Analysis_R.qmd` in RStudio or render it with Quarto from the `Analysis/` directory.
 
-### Python Environment (`analysis.ipynb`)
+### Python
 
-1.  **Required Packages**: `cmdstanpy` and `pandas`.
-2.  **Installation**: 
-    ```bash
-    pip install cmdstanpy pandas` 
-    ```
+The Python dependencies are pinned in [`requirements.txt`](requirements.txt).
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt jupyterlab
+python -c 'from cmdstanpy import install_cmdstan; install_cmdstan(version=open("config/cmdstan-version.txt").read().strip())'
+jupyter lab Analysis/Analysis_py.ipynb
+```
+
+The final command can be run from the repository root. If the notebook is opened another way, set its working directory to `Analysis/` before execution.
+
+## Repository structure
+
+```text
+.
+├── Analysis/           # Data, maintained workflows, Stan models, source archives
+├── config/             # Pinned computational-tool versions
+├── figures/            # Figure PDFs and editable source files
+├── presentation/       # Conference posters, slides, and abstracts
+├── video/              # Representative experimental trials
+├── CITATION.cff        # Citation metadata
+├── CODEBOOK.md         # Dataset documentation
+├── LICENSE             # License for repository code
+├── renv.lock           # Locked R environment
+└── requirements.txt    # Locked Python dependencies
+```
+
+## Research transparency
+
+- **Data availability:** The analysis data are included in this repository and in the article's supplementary materials.
+- **Ethics:** The animal study was reviewed and approved by the Reed College Institutional Care and Use Committee.
+- **Funding:** Reed College Summer Scholarship Funds supported the research.
+- **Conflicts of interest:** The authors reported no commercial or financial relationships that could be construed as a potential conflict of interest.
+- **Scope:** This repository documents a completed, published study. Corrections that improve reproducibility or documentation are welcome through GitHub issues.
+
+## Citation and reuse
+
+Please cite the article above when using these materials. Citation metadata are available in [`CITATION.cff`](CITATION.cff) and through GitHub's **Cite this repository** menu.
+
+Repository code is available under the [MIT License](LICENSE). The published article is distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Article content, third-party materials, and publisher-hosted supplementary files retain their stated licenses; the MIT license does not override those terms.
