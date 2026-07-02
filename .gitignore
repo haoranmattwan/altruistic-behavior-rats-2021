@@ -42,3 +42,13 @@ tmp/
 .DS_Store
 ._*
 .vscode/
+
+# Other
+/Data Analysis/
+/Final Versions/
+/Manuscript Versions/
+/Memory/
+/Opportunity Grant/
+/Previous/
+/Reference PDFs/
+/Wan_et_al-2021-Frontiers_in_Psychology.pdf
